@@ -6,11 +6,10 @@ package ring
 import (
 	"errors"
 	"io"
+	"maps"
 	"os"
 	"slices"
 	"time"
-
-	"github.com/ctx42/ring/internal/meta"
 )
 
 // Sentinel errors.
@@ -45,26 +44,23 @@ func WithClock(clk Clock) Option {
 }
 
 // WithMeta is an option for [New] setting metadata.
-func WithMeta(m map[string]any) Option {
-	return func(rng *Ring) { rng.hidMeta = meta.New(meta.WithMap(m)) }
-}
+func WithMeta(m map[string]any) Option { return func(rng *Ring) { rng.m = m } }
 
 // Do not export embedded.
 type (
-	hidMeta = meta.Meta
-	hidEnv  = Env
+	hidEnv = Env
 )
 
 var _ Streams = Ring{} // Compile time check.
 
 // Ring represents program execution context.
 type Ring struct {
-	hidEnv           // Environment.
-	hidMeta          // Metadata.
-	io      StdIO    // I/O streams.
-	clock   Clock    // Function returning current time in UTC.
-	args    []string // Arguments (without program name).
-	name    string   // Context name.
+	hidEnv                // Environment.
+	io     StdIO          // I/O streams.
+	clock  Clock          // Function returning current time in UTC.
+	args   []string       // Arguments (without program name).
+	name   string         // Context name.
+	m      map[string]any // Metadata associated with the ring.
 }
 
 // Now returns the current time in UTC.
@@ -114,8 +110,8 @@ func New(opts ...Option) Ring {
 	if rng.EnvIsNil() {
 		rng.hidEnv = NewEnv(os.Environ())
 	}
-	if rng.MetaIsNil() {
-		rng.hidMeta = meta.New()
+	if rng.m == nil {
+		rng.m = make(map[string]any, 10)
 	}
 	return rng
 }
@@ -197,20 +193,23 @@ func (rng Ring) EnvUnset(key string) Ring {
 
 // MetaSet returns new [Ring] with metadata variable named by key set.
 func (rng Ring) MetaSet(key string, value any) Ring {
-	rng.hidMeta.MetaSet(key, value)
+	rng.m[key] = value
 	return rng
 }
 
 // MetaDelete returns new [Ring] with metadata variable named by key deleted.
 func (rng Ring) MetaDelete(key string) Ring {
-	rng.hidMeta.MetaDelete(key)
+	delete(rng.m, key)
 	return rng
 }
+
+// MetaAll returns clone of metadata associated with the ring.
+func (rng Ring) MetaAll() map[string]any { return maps.Clone(rng.m) }
 
 // IsZero returns true when ring is zero value - `ring.Ring{}` for example.
 func (rng Ring) IsZero() bool {
 	return rng.EnvIsNil() &&
-		rng.MetaIsNil() &&
+		(rng.m == nil || len(rng.m) == 0) &&
 		len(rng.args) == 0 &&
 		rng.name == ""
 }

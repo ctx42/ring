@@ -31,6 +31,7 @@ type Environ interface {
 
 	// EnvGetAll returns environment as a slice of "key=value" entries. It
 	// returns nil when the environment is empty.
+	// TODO(rz): rename to Environment or EnvAll.
 	EnvGetAll() []string
 }
 

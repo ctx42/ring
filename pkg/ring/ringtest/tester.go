@@ -15,7 +15,6 @@ import (
 	"github.com/ctx42/testing/pkg/tester"
 	"github.com/ctx42/testing/pkg/tstkit"
 
-	"github.com/ctx42/ring/internal/meta"
 	"github.com/ctx42/ring/pkg/ring"
 )
 
@@ -31,7 +30,7 @@ func WithName(name string) func(*Tester) {
 
 // WithMeta is an option for [New] setting ring metadata.
 func WithMeta(m map[string]any) func(*Tester) {
-	return func(tst *Tester) { tst.hidMeta = meta.New(meta.WithMap(m)) }
+	return func(tst *Tester) { tst.m = m }
 }
 
 // WithClock is an option for [New] setting clock function.
@@ -47,20 +46,19 @@ func Sort(in []string) []string {
 
 // Hide embedded fields.
 type (
-	hidMeta = meta.Meta
-	hidEnv  = ring.Env
+	hidEnv = ring.Env
 )
 
 // Tester represents CLI test helper.
 type Tester struct {
-	hidEnv                 // Environment.
-	hidMeta                // Metadata.
-	sin     *bytes.Buffer  // Buffer representing standard input.
-	sout    *tstkit.Buffer // Buffer to collect stdout writes.
-	eout    *tstkit.Buffer // Buffer to collect stderr writes.
-	clock   ring.Clock     // Function returning current time in UTC.
-	name    string         // Program name.
-	t       tester.T       // The test manager.
+	hidEnv                // Environment.
+	m      map[string]any // Metadata.
+	sin    *bytes.Buffer  // Buffer representing standard input.
+	sout   *tstkit.Buffer // Buffer to collect stdout writes.
+	eout   *tstkit.Buffer // Buffer to collect stderr writes.
+	clock  ring.Clock     // Function returning current time in UTC.
+	name   string         // Program name.
+	t      tester.T       // The test manager.
 }
 
 // New returns new instance of Tester.
@@ -80,8 +78,8 @@ func New(t tester.T, opts ...func(*Tester)) *Tester {
 	if tst.EnvIsNil() {
 		tst.hidEnv = ring.NewEnv(os.Environ())
 	}
-	if tst.MetaIsNil() {
-		tst.hidMeta = meta.New()
+	if tst.m == nil {
+		tst.m = make(map[string]any, 10)
 	}
 	return tst
 }
@@ -90,7 +88,7 @@ func New(t tester.T, opts ...func(*Tester)) *Tester {
 func (tst *Tester) Ring(args ...string) ring.Ring {
 	opts := []ring.Option{
 		ring.WithEnv(slices.Clone(tst.EnvGetAll())),
-		ring.WithMeta(maps.Clone(tst.MetaGetAll())),
+		ring.WithMeta(maps.Clone(tst.m)),
 		ring.WithClock(tst.clock),
 		ring.WithArgs(args),
 	}

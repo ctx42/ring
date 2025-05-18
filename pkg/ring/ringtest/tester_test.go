@@ -49,7 +49,7 @@ func Test_WithMeta(t *testing.T) {
 	WithMeta(m)(tst)
 
 	// --- Then ---
-	assert.Same(t, m, tst.MetaGetAll())
+	assert.Same(t, m, tst.m)
 }
 
 func Test_WithClock(t *testing.T) {
@@ -78,7 +78,8 @@ func Test_New(t *testing.T) {
 		want := os.Environ()
 		sort.Strings(want)
 		assert.Equal(t, want, Sort(tst.EnvGetAll()))
-		assert.Empty(t, tst.MetaGetAll())
+		assert.NotNil(t, tst.m)
+		assert.Empty(t, tst.m)
 		content := must.Value(io.ReadAll(tst.Stdin()))
 		assert.Equal(t, "", string(content))
 		assert.Equal(t, "", tst.Stdout())
@@ -120,8 +121,8 @@ func Test_Tester_Ring(t *testing.T) {
 		// --- Then ---
 		assert.Equal(t, Sort(tst.EnvGetAll()), Sort(rng.EnvGetAll()))
 		assert.NotSame(t, tst.EnvGetAll(), rng.EnvGetAll())
-		assert.Equal(t, tst.MetaGetAll(), rng.MetaGetAll())
-		assert.NotSame(t, tst.MetaGetAll(), rng.MetaGetAll())
+		assert.Equal(t, tst.m, rng.MetaAll())
+		assert.NotSame(t, tst.m, rng.MetaAll())
 		assert.Same(t, tst.sin, rng.Stdin())
 		assert.Same(t, tst.sout, rng.Stdout())
 		assert.Same(t, tst.eout, rng.Stderr())

@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/pkg/assert"
-
-	"github.com/ctx42/ring/internal/meta"
 )
 
 func Test_WithEnv(t *testing.T) {
@@ -46,7 +44,7 @@ func Test_WithMeta(t *testing.T) {
 	WithMeta(map[string]any{"A": 1, "B": 2})(rng)
 
 	// --- Then ---
-	assert.Equal(t, map[string]any{"A": 1, "B": 2}, rng.MetaGetAll())
+	assert.Equal(t, map[string]any{"A": 1, "B": 2}, rng.m)
 }
 
 func Test_WithClock(t *testing.T) {
@@ -66,7 +64,7 @@ func Test_defaultRing(t *testing.T) {
 
 	// --- Then ---
 	assert.Nil(t, have.EnvGetAll())
-	assert.Nil(t, have.MetaGetAll())
+	assert.Nil(t, have.m)
 	assert.Same(t, os.Stdin, have.Stdin())
 	assert.Same(t, os.Stdout, have.Stdout())
 	assert.Same(t, os.Stderr, have.Stderr())
@@ -88,7 +86,7 @@ func Test_New(t *testing.T) {
 		want := os.Environ()
 		sort.Strings(want)
 		assert.Equal(t, want, Sort(have.EnvGetAll()))
-		assert.NotNil(t, have.MetaGetAll())
+		assert.NotNil(t, have.m)
 		assert.Same(t, os.Stdin, have.Stdin())
 		assert.Same(t, os.Stdout, have.Stdout())
 		assert.Same(t, os.Stderr, have.Stderr())
@@ -320,8 +318,8 @@ func Test_Ring_MetaSet(t *testing.T) {
 		have := rng.MetaSet("A", 1)
 
 		// --- Then ---
-		assert.Equal(t, map[string]any{"A": 1}, rng.MetaGetAll())
-		assert.Equal(t, map[string]any{"A": 1}, have.MetaGetAll())
+		assert.Equal(t, map[string]any{"A": 1}, rng.m)
+		assert.Equal(t, map[string]any{"A": 1}, have.m)
 	})
 
 	t.Run("set existing", func(t *testing.T) {
@@ -332,8 +330,8 @@ func Test_Ring_MetaSet(t *testing.T) {
 		have := rng.MetaSet("A", 2)
 
 		// --- Then ---
-		assert.Equal(t, map[string]any{"A": 2}, rng.MetaGetAll())
-		assert.Equal(t, map[string]any{"A": 2}, have.MetaGetAll())
+		assert.Equal(t, map[string]any{"A": 2}, rng.m)
+		assert.Equal(t, map[string]any{"A": 2}, have.m)
 	})
 }
 
@@ -346,8 +344,8 @@ func Test_Ring_MetaDelete(t *testing.T) {
 		have := rng.MetaDelete("A")
 
 		// --- Then ---
-		assert.Equal(t, map[string]any{"B": 2}, have.MetaGetAll())
-		assert.Equal(t, map[string]any{"B": 2}, rng.MetaGetAll())
+		assert.Equal(t, map[string]any{"B": 2}, have.m)
+		assert.Equal(t, map[string]any{"B": 2}, rng.m)
 	})
 
 	t.Run("delete not existing", func(t *testing.T) {
@@ -358,9 +356,9 @@ func Test_Ring_MetaDelete(t *testing.T) {
 		have := rng.MetaDelete("B")
 
 		// --- Then ---
-		assert.Equal(t, map[string]any{"A": 1}, have.MetaGetAll())
-		assert.Equal(t, map[string]any{"A": 1}, rng.MetaGetAll())
-		assert.Same(t, rng.MetaGetAll(), have.MetaGetAll())
+		assert.Equal(t, map[string]any{"A": 1}, have.m)
+		assert.Equal(t, map[string]any{"A": 1}, rng.m)
+		assert.Same(t, rng.m, have.m)
 	})
 }
 
@@ -400,7 +398,7 @@ func Test_Ring_IsZero(t *testing.T) {
 
 	t.Run("not zero if meta set", func(t *testing.T) {
 		// --- Given ---
-		rng := Ring{hidMeta: meta.New()}
+		rng := Ring{m: map[string]any{"A": 1}}
 
 		// --- When ---
 		have := rng.IsZero()
