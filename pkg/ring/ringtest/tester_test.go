@@ -187,7 +187,7 @@ func Test_Tester_WetStdout(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(3)
 		tspy.ExpectError()
-		tspy.ExpectLogEqual("expected stdout buffer not to be empty")
+		tspy.ExpectLogEqual("expected buffer not to be empty:\n  name: stdout")
 		tspy.Close()
 
 		tst := New(tspy)
@@ -204,9 +204,10 @@ func Test_Tester_WetStdout(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(2)
 		tspy.ExpectError()
-		wMsg := "expected stdout buffer to be empty:\n" +
-			"\twant: \n" +
-			"\thave: \"abc\""
+		wMsg := "expected buffer to be empty:\n" +
+			"  name: stdout\n" +
+			"  want: <empty>\n" +
+			"  have: abc"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 
@@ -236,7 +237,7 @@ func Test_Tester_WetStderr(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(3)
 		tspy.ExpectError()
-		tspy.ExpectLogEqual("expected stderr buffer not to be empty")
+		tspy.ExpectLogEqual("expected buffer not to be empty:\n  name: stderr")
 		tspy.Close()
 
 		tst := New(tspy)
@@ -253,9 +254,10 @@ func Test_Tester_WetStderr(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(2)
 		tspy.ExpectError()
-		wMsg := "expected stderr buffer to be empty:\n" +
-			"\twant: \n" +
-			"\thave: \"abc\""
+		wMsg := "expected buffer to be empty:\n" +
+			"  name: stderr\n" +
+			"  want: <empty>\n" +
+			"  have: abc"
 		tspy.ExpectLogEqual(wMsg)
 		tspy.Close()
 

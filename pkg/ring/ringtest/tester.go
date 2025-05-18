@@ -13,28 +13,28 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/pkg/tester"
+	"github.com/ctx42/testing/pkg/tstkit"
 
 	"github.com/ctx42/ring/internal/meta"
-	"github.com/ctx42/ring/internal/tsbuf"
 	"github.com/ctx42/ring/pkg/ring"
 )
 
-// WithEnv is option for [New] setting the environment to use.
+// WithEnv is an option for [New] setting the environment to use.
 func WithEnv(env []string) func(*Tester) {
 	return func(tst *Tester) { tst.hidEnv = ring.NewEnv(env) }
 }
 
-// WithName is option for [New] setting program name.
+// WithName is an option for [New] setting program name.
 func WithName(name string) func(*Tester) {
 	return func(tst *Tester) { tst.name = name }
 }
 
-// WithMeta is option for [New] setting ring metadata.
+// WithMeta is an option for [New] setting ring metadata.
 func WithMeta(m map[string]any) func(*Tester) {
 	return func(tst *Tester) { tst.hidMeta = meta.New(meta.WithMap(m)) }
 }
 
-// WithClock is option for [New] setting clock function.
+// WithClock is an option for [New] setting clock function.
 func WithClock(clock ring.Clock) func(*Tester) {
 	return func(tst *Tester) { tst.clock = clock }
 }
@@ -53,14 +53,14 @@ type (
 
 // Tester represents CLI test helper.
 type Tester struct {
-	hidEnv                  // Environment.
-	hidMeta                 // Metadata.
-	sin     *bytes.Buffer   // Buffer representing standard input.
-	sout    *tsbuf.TSBuffer // Buffer to collect stdout writes.
-	eout    *tsbuf.TSBuffer // Buffer to collect stderr writes.
-	clock   ring.Clock      // Function returning current time in UTC.
-	name    string          // Program name.
-	t       tester.T        // The test manager.
+	hidEnv                 // Environment.
+	hidMeta                // Metadata.
+	sin     *bytes.Buffer  // Buffer representing standard input.
+	sout    *tstkit.Buffer // Buffer to collect stdout writes.
+	eout    *tstkit.Buffer // Buffer to collect stderr writes.
+	clock   ring.Clock     // Function returning current time in UTC.
+	name    string         // Program name.
+	t       tester.T       // The test manager.
 }
 
 // New returns new instance of Tester.
@@ -68,8 +68,8 @@ func New(t tester.T, opts ...func(*Tester)) *Tester {
 	t.Helper()
 	tst := &Tester{
 		sin:   &bytes.Buffer{},
-		sout:  tsbuf.DryBuffer(t, "stdout"),
-		eout:  tsbuf.DryBuffer(t, "stderr"),
+		sout:  tstkit.DryBuffer(t, "stdout"),
+		eout:  tstkit.DryBuffer(t, "stderr"),
 		clock: ring.Now,
 		name:  os.Args[0],
 		t:     t,
@@ -118,7 +118,7 @@ func (tst *Tester) WithStdin(sin *bytes.Buffer) *Tester {
 // WetStdout sets expectation that standard output will be written to.
 func (tst *Tester) WetStdout() *Tester {
 	tst.t.Helper()
-	tst.sout = tsbuf.WetBuffer(tst.t, "stdout")
+	tst.sout = tstkit.WetBuffer(tst.t, "stdout")
 	return tst
 }
 
@@ -128,7 +128,7 @@ func (tst *Tester) ResetStdout() { tst.sout.Reset() }
 // WetStderr sets expectation that standard error will be written to.
 func (tst *Tester) WetStderr() *Tester {
 	tst.t.Helper()
-	tst.eout = tsbuf.WetBuffer(tst.t, "stderr")
+	tst.eout = tstkit.WetBuffer(tst.t, "stderr")
 	return tst
 }
 
