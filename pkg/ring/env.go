@@ -140,6 +140,7 @@ func EnvUnset(env []string, key string) []string {
 
 // EnvSplit parses [os.Environ] results and returns it as a key value map.
 func EnvSplit(env []string) map[string]string {
+	// TODO(rz): Should []string{"A"} work?
 	m := make(map[string]string, 10)
 	for _, s := range env {
 		if s == "" {

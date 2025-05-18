@@ -119,8 +119,8 @@ func Test_Tester_Ring(t *testing.T) {
 		rng := tst.Ring("a", "b", "c")
 
 		// --- Then ---
-		assert.Equal(t, Sort(tst.EnvGetAll()), Sort(rng.EnvGetAll()))
-		assert.NotSame(t, tst.EnvGetAll(), rng.EnvGetAll())
+		assert.Equal(t, Sort(tst.EnvGetAll()), Sort(rng.Env().EnvGetAll()))
+		assert.NotSame(t, tst.EnvGetAll(), rng.Env().EnvGetAll())
 		assert.Equal(t, tst.m, rng.MetaAll())
 		assert.NotSame(t, tst.m, rng.MetaAll())
 		assert.Same(t, tst.sin, rng.Stdin())

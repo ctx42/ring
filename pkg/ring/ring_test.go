@@ -387,13 +387,24 @@ func Test_Ring_IsZero(t *testing.T) {
 
 	t.Run("not zero if env set", func(t *testing.T) {
 		// --- Given ---
-		rng := Ring{hidEnv: NewEnv(nil)}
+		rng := Ring{hidEnv: NewEnv([]string{"A=1"})}
 
 		// --- When ---
 		have := rng.IsZero()
 
 		// --- Then ---
 		assert.False(t, have)
+	})
+
+	t.Run("zero if env is empty", func(t *testing.T) {
+		// --- Given ---
+		rng := Ring{hidEnv: NewEnv(nil)}
+
+		// --- When ---
+		have := rng.IsZero()
+
+		// --- Then ---
+		assert.True(t, have)
 	})
 
 	t.Run("not zero if meta set", func(t *testing.T) {
@@ -405,6 +416,17 @@ func Test_Ring_IsZero(t *testing.T) {
 
 		// --- Then ---
 		assert.False(t, have)
+	})
+
+	t.Run("zero if meta empty", func(t *testing.T) {
+		// --- Given ---
+		rng := Ring{m: map[string]any{}}
+
+		// --- When ---
+		have := rng.IsZero()
+
+		// --- Then ---
+		assert.True(t, have)
 	})
 
 	t.Run("not zero if name set", func(t *testing.T) {
