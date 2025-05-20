@@ -5,64 +5,14 @@ package ringtest
 
 import (
 	"bytes"
-	"fmt"
-	"io"
 	"os"
-	"sort"
 	"testing"
-	"time"
 
 	"github.com/ctx42/testing/pkg/assert"
-	"github.com/ctx42/testing/pkg/must"
 	"github.com/ctx42/testing/pkg/tester"
+
+	"github.com/ctx42/ring/pkg/ring"
 )
-
-func Test_WithEnv(t *testing.T) {
-	// --- Given ---
-	env := []string{"A=B", "C=D"}
-	tst := &Tester{}
-
-	// --- When ---
-	WithEnv(env)(tst)
-
-	// --- Then ---
-	assert.Equal(t, env, Sort(tst.EnvGetAll()))
-}
-
-func Test_WithName(t *testing.T) {
-	// --- Given ---
-	tst := &Tester{}
-
-	// --- When ---
-	WithName("my")(tst)
-
-	// --- Then ---
-	assert.Equal(t, "my", tst.Name())
-}
-
-func Test_WithMeta(t *testing.T) {
-	// --- Given ---
-	m := map[string]any{"A": 1}
-	tst := &Tester{}
-
-	// --- When ---
-	WithMeta(m)(tst)
-
-	// --- Then ---
-	assert.Same(t, m, tst.m)
-}
-
-func Test_WithClock(t *testing.T) {
-	// --- Given ---
-	fn := func() time.Time { return time.Now().UTC() }
-	tst := &Tester{}
-
-	// --- When ---
-	WithClock(fn)(tst)
-
-	// --- Then ---
-	assert.Same(t, fn, tst.Clock())
-}
 
 func Test_New(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
@@ -75,18 +25,22 @@ func Test_New(t *testing.T) {
 		tst := New(tspy)
 
 		// --- Then ---
-		want := os.Environ()
-		sort.Strings(want)
-		assert.Equal(t, want, Sort(tst.EnvGetAll()))
-		assert.NotNil(t, tst.m)
-		assert.Empty(t, tst.m)
-		content := must.Value(io.ReadAll(tst.Stdin()))
-		assert.Equal(t, "", string(content))
-		assert.Equal(t, "", tst.Stdout())
-		assert.Equal(t, "", tst.Stderr())
-		assert.Within(t, time.Now(), "1ms", tst.Clock()())
-		assert.Zone(t, time.UTC, tst.Clock()().Location())
-		assert.Equal(t, os.Args[0], tst.Name())
+
+		// The instance of [ring.Ring].
+		assert.Equal(t, Sort(os.Environ()), Sort(tst.rng.EnvAll()))
+		assert.NotNil(t, tst.rng.MetaAll())
+		assert.Empty(t, tst.rng.MetaAll())
+		assert.Same(t, os.Stdin, tst.rng.Stdin())
+		assert.Same(t, os.Stdout, tst.rng.Stdout())
+		assert.Same(t, os.Stderr, tst.rng.Stderr())
+		assert.Same(t, ring.NowUTC, tst.rng.Clock())
+		assert.Equal(t, os.Args[0], tst.rng.Name())
+		assert.Empty(t, tst.rng.Args())
+
+		// The instance of [tester.Tester].
+		assert.Empty(t, tst.sin.String())
+		assert.Equal(t, "", tst.sout.String())
+		assert.Equal(t, "", tst.eout.String())
 		assert.Same(t, tspy, tst.t)
 	})
 
@@ -99,10 +53,10 @@ func Test_New(t *testing.T) {
 		env := []string{"A=B", "C=D"}
 
 		// --- When ---
-		tst := New(tspy, WithEnv(env))
+		tst := New(tspy, ring.WithEnv(env))
 
 		// --- Then ---
-		assert.Equal(t, env, Sort(tst.EnvGetAll()))
+		assert.Equal(t, env, Sort(tst.Ring().EnvAll()))
 	})
 }
 
@@ -116,31 +70,53 @@ func Test_Tester_Ring(t *testing.T) {
 		tst := New(tspy)
 
 		// --- When ---
-		rng := tst.Ring("a", "b", "c")
+		rng := tst.Ring()
 
 		// --- Then ---
-		assert.Equal(t, Sort(tst.EnvGetAll()), Sort(rng.Env().EnvGetAll()))
-		assert.NotSame(t, tst.EnvGetAll(), rng.Env().EnvGetAll())
-		assert.Equal(t, tst.m, rng.MetaAll())
-		assert.NotSame(t, tst.m, rng.MetaAll())
+		assert.Equal(t, Sort(os.Environ()), Sort(rng.EnvAll()))
+		assert.NotNil(t, rng.MetaAll())
+		assert.Empty(t, rng.MetaAll())
 		assert.Same(t, tst.sin, rng.Stdin())
 		assert.Same(t, tst.sout, rng.Stdout())
 		assert.Same(t, tst.eout, rng.Stderr())
-		assert.Same(t, tst.clock, rng.Clock())
+		assert.Same(t, ring.NowUTC, rng.Clock())
 		assert.Equal(t, os.Args[0], rng.Name())
-		assert.Equal(t, []string{"a", "b", "c"}, rng.Args())
+		assert.Empty(t, rng.Args())
 	})
 
-	t.Run("with custom name", func(t *testing.T) {
+	t.Run("with args", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(2)
 		tspy.Close()
 
-		tst := New(tspy, WithName("my"))
+		tst := New(tspy)
 
 		// --- When ---
 		rng := tst.Ring("a", "b", "c")
+
+		// --- Then ---
+		assert.Equal(t, Sort(os.Environ()), Sort(rng.EnvAll()))
+		assert.NotNil(t, rng.MetaAll())
+		assert.Empty(t, rng.MetaAll())
+		assert.Same(t, tst.sin, rng.Stdin())
+		assert.Same(t, tst.sout, rng.Stdout())
+		assert.Same(t, tst.eout, rng.Stderr())
+		assert.Same(t, ring.NowUTC, rng.Clock())
+		assert.Equal(t, os.Args[0], rng.Name())
+		assert.Equal(t, []string{"a", "b", "c"}, rng.Args())
+	})
+
+	t.Run("with a custom name", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(2)
+		tspy.Close()
+
+		tst := New(tspy, ring.WithName("my"))
+
+		// --- When ---
+		rng := tst.Ring()
 
 		// --- Then ---
 		assert.Equal(t, "my", rng.Name())
@@ -164,22 +140,21 @@ func Test_Tester_Streams(t *testing.T) {
 	assert.Same(t, tst.eout, ios.Stderr())
 }
 
-func Test_Tester_WithStdin(t *testing.T) {
+func Test_Tester_SetStdin(t *testing.T) {
 	// --- Given ---
 	tspy := tester.New(t)
 	tspy.ExpectCleanups(2)
 	tspy.Close()
 
-	buf := bytes.NewBuffer([]byte("test"))
+	buf := &bytes.Buffer{}
 	tst := New(tspy)
 
 	// --- When ---
-	have := tst.WithStdin(buf)
+	have := tst.SetStdin(buf)
 
 	// --- Then ---
 	assert.Same(t, tst, have)
-	content := must.Value(io.ReadAll(tst.Stdin()))
-	assert.Equal(t, "test", string(content))
+	assert.Same(t, buf, tst.sin)
 }
 
 func Test_Tester_WetStdout(t *testing.T) {
@@ -226,10 +201,13 @@ func Test_Tester_ResetStdout(t *testing.T) {
 	tspy.Close()
 
 	tst := New(tspy)
-	_, _ = fmt.Fprint(tst.sout, "test")
+	_, _ = tst.sout.WriteString("test")
 
 	// --- When ---
 	tst.ResetStdout()
+
+	// --- Then ---
+	assert.Equal(t, "", tst.sout.String())
 }
 
 func Test_Tester_WetStderr(t *testing.T) {
@@ -276,40 +254,29 @@ func Test_Tester_ResetStderr(t *testing.T) {
 	tspy.Close()
 
 	tst := New(tspy)
-	_, _ = fmt.Fprint(tst.eout, "test")
+	_, _ = tst.eout.WriteString("test")
 
 	// --- When ---
 	tst.ResetStderr()
+
+	// --- Then ---
+	assert.Equal(t, "", tst.eout.String())
 }
 
-func Test_Tester_EnvGetAll(t *testing.T) {
+func Test_Tester_Stdin(t *testing.T) {
 	// --- Given ---
 	tspy := tester.New(t)
 	tspy.ExpectCleanups(2)
 	tspy.Close()
 
-	tst := New(tspy, WithEnv([]string{"A=B", "C=D"}))
+	tst := New(tspy)
+	_, _ = tst.sin.WriteString("abc")
 
 	// --- When ---
-	have := Sort(tst.EnvGetAll())
+	have := tst.Stdin()
 
 	// --- Then ---
-	assert.Equal(t, []string{"A=B", "C=D"}, have)
-}
-
-func Test_Tester_Name(t *testing.T) {
-	// --- Given ---
-	tspy := tester.New(t)
-	tspy.ExpectCleanups(2)
-	tspy.Close()
-
-	tst := New(tspy, WithName("name"))
-
-	// --- When ---
-	have := tst.Name()
-
-	// --- Then ---
-	assert.Equal(t, "name", have)
+	assert.Equal(t, "abc", have)
 }
 
 func Test_Tester_Stdout(t *testing.T) {
@@ -375,25 +342,5 @@ func Test_Tester_Stderr(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, "abc", have)
-	})
-}
-
-func Test_Tester_Clock(t *testing.T) {
-	t.Run("nothing written", func(t *testing.T) {
-		// --- Given ---
-		tim := time.Date(2000, 1, 2, 3, 4, 5, 6, time.UTC)
-		clk := func() time.Time { return tim }
-
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(2)
-		tspy.Close()
-
-		tst := New(tspy, WithClock(clk))
-
-		// --- When ---
-		have := tst.Clock()
-
-		// --- Then ---
-		assert.Exact(t, tim, have())
 	})
 }

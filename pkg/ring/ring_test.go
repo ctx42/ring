@@ -4,10 +4,7 @@
 package ring
 
 import (
-	"bytes"
 	"os"
-	"reflect"
-	"sort"
 	"testing"
 	"time"
 
@@ -22,7 +19,18 @@ func Test_WithEnv(t *testing.T) {
 	WithEnv([]string{"A=1", "B=2"})(rng)
 
 	// --- Then ---
-	assert.Equal(t, []string{"A=1", "B=2"}, Sort(rng.EnvGetAll()))
+	assert.Equal(t, map[string]string{"A": "1", "B": "2"}, rng.hidEnv.env)
+}
+
+func Test_WithName(t *testing.T) {
+	// --- Given ---
+	rng := &Ring{}
+
+	// --- When ---
+	WithName("abc")(rng)
+
+	// --- Then ---
+	assert.Equal(t, "abc", rng.name)
 }
 
 func Test_WithArgs(t *testing.T) {
@@ -33,7 +41,7 @@ func Test_WithArgs(t *testing.T) {
 	WithArgs([]string{"A=1", "B=2"})(rng)
 
 	// --- Then ---
-	assert.Equal(t, []string{"A=1", "B=2"}, rng.Args())
+	assert.Equal(t, []string{"A=1", "B=2"}, rng.args)
 }
 
 func Test_WithMeta(t *testing.T) {
@@ -44,7 +52,7 @@ func Test_WithMeta(t *testing.T) {
 	WithMeta(map[string]any{"A": 1, "B": 2})(rng)
 
 	// --- Then ---
-	assert.Equal(t, map[string]any{"A": 1, "B": 2}, rng.m)
+	assert.Equal(t, map[string]any{"A": 1, "B": 2}, rng.meta)
 }
 
 func Test_WithClock(t *testing.T) {
@@ -55,7 +63,7 @@ func Test_WithClock(t *testing.T) {
 	WithClock(time.Now)(rng)
 
 	// --- Then ---
-	assert.Same(t, time.Now, rng.Clock())
+	assert.Same(t, time.Now, rng.clock)
 }
 
 func Test_defaultRing(t *testing.T) {
@@ -63,18 +71,15 @@ func Test_defaultRing(t *testing.T) {
 	have := defaultRing()
 
 	// --- Then ---
-	assert.Nil(t, have.EnvGetAll())
-	assert.Nil(t, have.m)
-	assert.Same(t, os.Stdin, have.Stdin())
-	assert.Same(t, os.Stdout, have.Stdout())
-	assert.Same(t, os.Stderr, have.Stderr())
-	assert.Within(t, time.Now(), "1ms", have.Clock()())
-	assert.Zone(t, time.UTC, have.Clock()().Location())
-	assert.Equal(t, os.Args[1:], have.Args())
-	assert.Equal(t, os.Args[0], have.Name())
-
-	// If this fails, that means the above assertions need to be adjusted.
-	assert.Equal(t, 6, reflect.TypeOf(have).NumField())
+	assert.Nil(t, have.hidEnv)
+	assert.Same(t, os.Stdin, have.stdin)
+	assert.Same(t, os.Stdout, have.stdout)
+	assert.Same(t, os.Stderr, have.stderr)
+	assert.Same(t, NowUTC, have.clock)
+	assert.Equal(t, os.Args[0], have.name)
+	assert.Equal(t, os.Args[1:], have.args)
+	assert.Nil(t, have.meta)
+	assert.Fields(t, 6, Ring{})
 }
 
 func Test_New(t *testing.T) {
@@ -83,23 +88,19 @@ func Test_New(t *testing.T) {
 		have := New()
 
 		// --- Then ---
-		want := os.Environ()
-		sort.Strings(want)
-		assert.Equal(t, want, Sort(have.EnvGetAll()))
-		assert.NotNil(t, have.m)
-		assert.Same(t, os.Stdin, have.Stdin())
-		assert.Same(t, os.Stdout, have.Stdout())
-		assert.Same(t, os.Stderr, have.Stderr())
-		assert.Within(t, time.Now(), "1ms", have.Clock()())
-		assert.Zone(t, time.UTC, have.Clock()().Location())
-		assert.Equal(t, os.Args[1:], have.Args())
-		assert.Equal(t, os.Args[0], have.Name())
-
-		// If this fails, that means the above assertions need to be adjusted.
-		assert.Equal(t, 6, reflect.TypeOf(have).NumField())
+		assert.Equal(t, Sort(os.Environ()), Sort(have.EnvAll()))
+		assert.Same(t, os.Stdin, have.stdin)
+		assert.Same(t, os.Stdout, have.stdout)
+		assert.Same(t, os.Stderr, have.stderr)
+		assert.Same(t, NowUTC, have.clock)
+		assert.Equal(t, os.Args[0], have.name)
+		assert.Equal(t, os.Args[1:], have.args)
+		assert.NotNil(t, have.meta)
+		assert.Empty(t, have.meta)
+		assert.Fields(t, 6, Ring{})
 	})
 
-	t.Run("environment not overwritten", func(t *testing.T) {
+	t.Run("with option", func(t *testing.T) {
 		// --- Given ---
 		env := []string{"A=1", "B=2"}
 
@@ -107,206 +108,43 @@ func Test_New(t *testing.T) {
 		rng := New(WithEnv(env))
 
 		// --- Then ---
-		assert.Equal(t, []string{"A=1", "B=2"}, Sort(rng.EnvGetAll()))
+		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, rng.env)
 	})
-}
-
-func Test_Ring_WithStdin_Stdin(t *testing.T) {
-	// --- Given ---
-	buf := &bytes.Buffer{}
-	rng := New()
-
-	// --- When ---
-	have := rng.WithStdin(buf)
-
-	// --- Then ---
-	assert.Same(t, buf, have.Stdin())
-	assert.NotSame(t, rng.Stdin(), have.Stdin())
-}
-
-func Test_Ring_WithStdout_Stdout(t *testing.T) {
-	// --- Given ---
-	buf := &bytes.Buffer{}
-	rng := New()
-
-	// --- When ---
-	have := rng.WithStdout(buf)
-
-	// --- Then ---
-	assert.Same(t, buf, have.Stdout())
-	assert.NotSame(t, rng.Stdout(), have.Stdout())
-}
-
-func Test_Ring_WithStderr_Stderr(t *testing.T) {
-	// --- Given ---
-	buf := &bytes.Buffer{}
-	rng := New()
-
-	// --- When ---
-	have := rng.WithStderr(buf)
-
-	// --- Then ---
-	assert.Same(t, buf, have.Stderr())
-	assert.NotSame(t, rng.Stderr(), have.Stderr())
 }
 
 func Test_Ring_Clock(t *testing.T) {
 	// --- Given ---
-	rng := New()
+	custom := func() time.Time { return time.Time{} }
+	rng := &Ring{clock: custom}
 
 	// --- When ---
 	have := rng.Clock()
 
 	// --- Then ---
-	assert.Within(t, time.Now(), "1ms", have())
-	assert.Zone(t, time.UTC, have().Location())
+	assert.Same(t, custom, have)
 }
 
-func Test_Ring_WithArgs_Args(t *testing.T) {
-	t.Run("set args", func(t *testing.T) {
-		// --- Given ---
-		env := []string{"A=1", "B=2"}
-		rng := New()
-
-		// --- When ---
-		have := rng.WithArgs(env)
-
-		// --- Then ---
-		assert.Equal(t, []string{"A=1", "B=2"}, have.Args())
-		assert.NotEqual(t, rng.Args(), have.Args())
-	})
-
-	t.Run("WithArgs returns clone", func(t *testing.T) {
-		// --- Given ---
-		rng0 := New(WithArgs([]string{}))
-
-		// --- When ---
-		rng1 := rng0.WithArgs([]string{"A=1", "B=2"})
-		rng2 := rng1.WithArgs([]string{"C=3", "D=4"})
-		rng3 := rng2.WithName("abc")
-
-		// --- Then ---
-		assert.Len(t, 0, rng0.Args())
-		assert.Equal(t, []string{"A=1", "B=2"}, rng1.Args())
-		assert.Equal(t, []string{"C=3", "D=4"}, rng2.Args())
-		assert.Equal(t, []string{"C=3", "D=4"}, rng3.Args())
-	})
-}
-
-func Test_Ring_WithName_Name(t *testing.T) {
+func Test_Ring_Args(t *testing.T) {
 	// --- Given ---
-	rng := New()
+	args := []string{"-arg0", "-arg1"}
+	rng := &Ring{args: args}
 
 	// --- When ---
-	have := rng.WithName("my")
+	have := rng.Args()
 
 	// --- Then ---
-	assert.Equal(t, "my", have.Name())
-	assert.NotEqual(t, rng.Name(), have.Name())
+	assert.Same(t, args, have)
 }
 
-func Test_Ring_Env(t *testing.T) {
-	t.Run("get all", func(t *testing.T) {
-		// --- Given ---
-		rng := New(WithEnv([]string{"A=1", "B=2"}))
-
-		// --- When ---
-		env := rng.Env()
-
-		// --- Then ---
-		want := []string{"A=1", "B=2"}
-		assert.Equal(t, want, Sort(env.EnvGetAll()))
-	})
-
-	t.Run("gets copy", func(t *testing.T) {
-		// --- Given ---
-		rng := New(WithEnv([]string{"A=1", "B=2"}))
-		env := rng.Env()
-
-		// --- When ---
-		env.EnvSet("C", "3")
-
-		// --- Then ---
-		assert.Equal(t, []string{"A=1", "B=2", "C=3"}, Sort(env.EnvGetAll()))
-		assert.Equal(t, []string{"A=1", "B=2"}, Sort(rng.EnvGetAll()))
-	})
-}
-
-func Test_Ring_EnvSet(t *testing.T) {
-	t.Run("set env", func(t *testing.T) {
-		// --- Given ---
-		env := []string{"A=1", "B=2"}
-		rng := New(WithEnv(env))
-
-		// --- When ---
-		have := rng.EnvSet("C", "3")
-
-		// --- Then ---
-		want := []string{"A=1", "B=2", "C=3"}
-		assert.Equal(t, want, Sort(have.EnvGetAll()))
-		assert.NotEqual(t, rng.EnvGetAll(), have.EnvGetAll())
-	})
-
-	t.Run("WithEnv returns clone", func(t *testing.T) {
-		// --- Given ---
-		rng0 := New(WithEnv([]string{}))
-
-		// --- When ---
-		rng1 := rng0.EnvSet("A", "1")
-		rng2 := rng1.EnvSet("B", "2")
-		rng3 := rng2.WithName("abc")
-
-		// --- Then ---
-		assert.Len(t, 0, rng0.EnvGetAll())
-		assert.Equal(t, []string{"A=1"}, rng1.EnvGetAll())
-		assert.Equal(t, []string{"A=1", "B=2"}, Sort(rng2.EnvGetAll()))
-		assert.Equal(t, []string{"A=1", "B=2"}, Sort(rng3.EnvGetAll()))
-	})
-}
-
-func Test_Ring_EnvSetBulk(t *testing.T) {
+func Test_Ring_Name(t *testing.T) {
 	// --- Given ---
-	env := []string{"A=1", "B=2"}
-	rng := New(WithEnv(env))
+	rng := &Ring{name: "abc"}
 
 	// --- When ---
-	have := rng.EnvSetBulk([]string{"A=A", "C=3"})
+	have := rng.Name()
 
 	// --- Then ---
-	want := []string{"A=A", "B=2", "C=3"}
-	assert.Equal(t, want, Sort(have.EnvGetAll()))
-	assert.NotEqual(t, rng.EnvGetAll(), have.EnvGetAll())
-}
-
-func Test_Ring_EnvUnset(t *testing.T) {
-	t.Run("unset env", func(t *testing.T) {
-		// --- Given ---
-		env := []string{"A=1", "B=2"}
-		rng := New(WithEnv(env))
-
-		// --- When ---
-		have := rng.EnvUnset("A")
-
-		// --- Then ---
-		assert.Equal(t, []string{"B=2"}, have.EnvGetAll())
-		assert.NotEqual(t, rng.EnvGetAll(), have.EnvGetAll())
-	})
-
-	t.Run("EnvUnset returns clone", func(t *testing.T) {
-		// --- Given ---
-		rng0 := New(WithEnv([]string{"A=1", "B=2"}))
-
-		// --- When ---
-		rng1 := rng0.EnvUnset("A")
-		rng2 := rng1.EnvUnset("B")
-		rng3 := rng2.WithName("abc")
-
-		// --- Then ---
-		assert.Equal(t, []string{"A=1", "B=2"}, Sort(rng0.EnvGetAll()))
-		assert.Equal(t, []string{"B=2"}, rng1.EnvGetAll())
-		assert.Nil(t, rng2.EnvGetAll())
-		assert.Nil(t, rng3.EnvGetAll())
-	})
+	assert.Equal(t, "abc", have)
 }
 
 func Test_Ring_MetaSet(t *testing.T) {
@@ -315,11 +153,10 @@ func Test_Ring_MetaSet(t *testing.T) {
 		rng := New()
 
 		// --- When ---
-		have := rng.MetaSet("A", 1)
+		rng.MetaSet("A", 1)
 
 		// --- Then ---
-		assert.Equal(t, map[string]any{"A": 1}, rng.m)
-		assert.Equal(t, map[string]any{"A": 1}, have.m)
+		assert.Equal(t, map[string]any{"A": 1}, rng.meta)
 	})
 
 	t.Run("set existing", func(t *testing.T) {
@@ -327,11 +164,10 @@ func Test_Ring_MetaSet(t *testing.T) {
 		rng := New(WithMeta(map[string]any{"A": 1}))
 
 		// --- When ---
-		have := rng.MetaSet("A", 2)
+		rng.MetaSet("A", 2)
 
 		// --- Then ---
-		assert.Equal(t, map[string]any{"A": 2}, rng.m)
-		assert.Equal(t, map[string]any{"A": 2}, have.m)
+		assert.Equal(t, map[string]any{"A": 2}, rng.meta)
 	})
 }
 
@@ -341,11 +177,10 @@ func Test_Ring_MetaDelete(t *testing.T) {
 		rng := New(WithMeta(map[string]any{"A": 1, "B": 2}))
 
 		// --- When ---
-		have := rng.MetaDelete("A")
+		rng.MetaDelete("A")
 
 		// --- Then ---
-		assert.Equal(t, map[string]any{"B": 2}, have.m)
-		assert.Equal(t, map[string]any{"B": 2}, rng.m)
+		assert.Equal(t, map[string]any{"B": 2}, rng.meta)
 	})
 
 	t.Run("delete not existing", func(t *testing.T) {
@@ -353,90 +188,21 @@ func Test_Ring_MetaDelete(t *testing.T) {
 		rng := New(WithMeta(map[string]any{"A": 1}))
 
 		// --- When ---
-		have := rng.MetaDelete("B")
+		rng.MetaDelete("B")
 
 		// --- Then ---
-		assert.Equal(t, map[string]any{"A": 1}, have.m)
-		assert.Equal(t, map[string]any{"A": 1}, rng.m)
-		assert.Same(t, rng.m, have.m)
+		assert.Equal(t, map[string]any{"A": 1}, rng.meta)
 	})
 }
 
-func Test_Ring_IsZero(t *testing.T) {
-	t.Run("is zero", func(t *testing.T) {
-		// --- Given ---
-		rng := Ring{}
+func Test_Ring_MetaAll(t *testing.T) {
+	// --- Given ---
+	rng := &Ring{meta: map[string]any{"A": 1}}
 
-		// --- When ---
-		have := rng.IsZero()
+	// --- When ---
+	have := rng.MetaAll()
 
-		// --- Then ---
-		assert.True(t, have)
-	})
-
-	t.Run("new is not", func(t *testing.T) {
-		// --- Given ---
-		rng := New()
-
-		// --- When ---
-		have := rng.IsZero()
-
-		// --- Then ---
-		assert.False(t, have)
-	})
-
-	t.Run("not zero if env set", func(t *testing.T) {
-		// --- Given ---
-		rng := Ring{hidEnv: NewEnv([]string{"A=1"})}
-
-		// --- When ---
-		have := rng.IsZero()
-
-		// --- Then ---
-		assert.False(t, have)
-	})
-
-	t.Run("zero if env is empty", func(t *testing.T) {
-		// --- Given ---
-		rng := Ring{hidEnv: NewEnv(nil)}
-
-		// --- When ---
-		have := rng.IsZero()
-
-		// --- Then ---
-		assert.True(t, have)
-	})
-
-	t.Run("not zero if meta set", func(t *testing.T) {
-		// --- Given ---
-		rng := Ring{m: map[string]any{"A": 1}}
-
-		// --- When ---
-		have := rng.IsZero()
-
-		// --- Then ---
-		assert.False(t, have)
-	})
-
-	t.Run("zero if meta empty", func(t *testing.T) {
-		// --- Given ---
-		rng := Ring{m: map[string]any{}}
-
-		// --- When ---
-		have := rng.IsZero()
-
-		// --- Then ---
-		assert.True(t, have)
-	})
-
-	t.Run("not zero if name set", func(t *testing.T) {
-		// --- Given ---
-		rng := Ring{name: "abc"}
-
-		// --- When ---
-		have := rng.IsZero()
-
-		// --- Then ---
-		assert.False(t, have)
-	})
+	// --- Then ---
+	assert.Equal(t, map[string]any{"A": 1}, have)
+	assert.NotSame(t, rng.meta, have)
 }

@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Environ represents environment.
+// Environ defines an interface for managing environment variables.
 type Environ interface {
 	// EnvLookup retrieves the value of the variable named by the key. If the
 	// variable is present in the environment, the value (which may be empty)
@@ -29,87 +29,87 @@ type Environ interface {
 	// EnvUnset unsets a single environment variable.
 	EnvUnset(key string)
 
-	// EnvGetAll returns environment as a slice of "key=value" entries. It
+	// EnvAll returns environment as a slice of "key=value" entries. It
 	// returns nil when the environment is empty.
-	// TODO(rz): rename to Environment or EnvAll.
-	EnvGetAll() []string
+	EnvAll() []string
 }
 
-var _ Environ = Env{} // Compile time check.
+var _ Environ = &Env{} // Compile time check.
 
-// Env represents environment.
-type Env struct{ e map[string]string }
+// Env implements [Environ], storing environment variables.
+type Env struct{ env map[string]string }
 
-// NewEnv returns new instance of [Env] initialized with `env`. If `env` is nil,
-// the new map will be allocated.
-func NewEnv(env []string) Env {
+// NewEnv creates a new [Env] initialized with the given environment variables.
+// If env is nil, an empty map is allocated. The input slice should contain
+// "key=value" strings, as produced by [os.Environ].
+func NewEnv(env []string) *Env {
 	if env == nil {
-		return Env{e: make(map[string]string, 20)}
+		return &Env{env: make(map[string]string, 20)}
 	}
-	return Env{e: EnvSplit(env)}
+	return &Env{env: EnvSplit(env)}
 }
 
-// EnvLookup retrieves the value of the variable named by the key. If the
-// variable is present in the environment, the value (which may be empty) is
-// returned and the boolean is true. Otherwise, the returned value will be
-// empty and the boolean will be false.
-func (env Env) EnvLookup(key string) (string, bool) {
-	val, exist := env.e[key]
+// EnvLookup retrieves the value of the environment variable named by the key
+// from the given env slice. Returns the value (which may be empty) and true if
+// the variable exists, or an empty string and false if it does not.
+func (env *Env) EnvLookup(key string) (string, bool) {
+	val, exist := env.env[key]
 	return val, exist
 }
 
-// EnvGet retrieves the value of the variable named by the key. It returns the
-// value, which will be empty if the variable is not present. To distinguish
-// between an empty value and an unset value, use [Env.EnvLookup].
-func (env Env) EnvGet(key string) string {
-	val, _ := env.e[key]
+// EnvGet retrieves the value of the environment variable named by the key from
+// the given env slice. Returns the value or an empty string if not set. To
+// distinguish between an empty value and an unset value, use [Env.EnvLookup].
+func (env *Env) EnvGet(key string) string {
+	val, _ := env.env[key]
 	return val
 }
 
-// EnvGetAll returns environment as a slice of "key=value" entries. It returns
-// nil when the environment is empty.
-func (env Env) EnvGetAll() []string {
-	var list []string
-	for key, value := range env.e {
-		list = append(list, key+"="+value)
-	}
-	return list
-}
+// EnvSet sets the environment variable named by the key to the given value.
+func (env *Env) EnvSet(key, value string) { env.env[key] = value }
 
-// EnvSet sets variable.
-func (env Env) EnvSet(key, value string) { env.e[key] = value }
-
-// EnvSetFrom sets environment variables from given map.
-func (env Env) EnvSetFrom(src map[string]string) {
+// EnvSetFrom sets multiple environment variables from the given map.
+// Overwrites existing variables with the same key.
+func (env *Env) EnvSetFrom(src map[string]string) {
 	for key, value := range src {
 		env.EnvSet(key, value)
 	}
 }
 
 // EnvUnset unsets a single environment variable.
-func (env Env) EnvUnset(key string) { delete(env.e, key) }
+func (env *Env) EnvUnset(key string) { delete(env.env, key) }
 
-// EnvIsNil returns true if no memory was allocated for environment.
-func (env Env) EnvIsNil() bool { return env.e == nil }
+// EnvAll returns environment as a slice of "key=value" entries. It returns nil
+// when the environment is empty.
+func (env *Env) EnvAll() []string {
+	if len(env.env) == 0 {
+		return nil
+	}
+	ret := make([]string, 0, len(env.env))
+	for key, value := range env.env {
+		ret = append(ret, key+"="+value)
+	}
+	return ret
+}
 
-// EnvLookup retrieves the value of the `env` variable named by the key. If the
-// variable is present in the `env` the value (which may be empty) is returned
+// EnvLookup retrieves the value of the "env" variable named by the key. If the
+// variable is present in the "env", the value (which may be empty) is returned
 // and the boolean is true. Otherwise, the returned value will be empty and the
 // boolean will be false.
 func EnvLookup(env []string, key string) (string, bool) {
 	return NewEnv(env).EnvLookup(key)
 }
 
-// EnvGet retrieves the value of the `env` variable named by the key. It
+// EnvGet retrieves the value of the "env" variable named by the key. It
 // returns the value, which will be empty if the variable is not present.
 // To distinguish between an empty value and an unset value, use [EnvLookup].
 func EnvGet(env []string, key string) string {
 	return NewEnv(env).EnvGet(key)
 }
 
-// EnvGetOr retrieves the value of the `env` variable named by the key. If the
-// key is not present in the environment, it will return def value.
-func EnvGetOr(env []string, key, def string) string {
+// EnvGetDefault retrieves the value of the "env" variable named by the key. If
+// the key is not present in the environment, it will return def value.
+func EnvGetDefault(env []string, key, def string) string {
 	if val, exist := EnvLookup(env, key); exist {
 		return val
 	}
@@ -121,8 +121,8 @@ func EnvSet(env []string, key, val string) []string {
 	m := NewEnv(env)
 	m.EnvSet(key, val)
 	env = env[:0]
-	for _, val := range m.EnvGetAll() {
-		env = append(env, val)
+	for _, v := range m.EnvAll() {
+		env = append(env, v)
 	}
 	return env
 }
@@ -132,7 +132,7 @@ func EnvUnset(env []string, key string) []string {
 	m := NewEnv(env)
 	m.EnvUnset(key)
 	env = env[:0]
-	for _, val := range m.EnvGetAll() {
+	for _, val := range m.EnvAll() {
 		env = append(env, val)
 	}
 	return env
@@ -140,7 +140,6 @@ func EnvUnset(env []string, key string) []string {
 
 // EnvSplit parses [os.Environ] results and returns it as a key value map.
 func EnvSplit(env []string) map[string]string {
-	// TODO(rz): Should []string{"A"} work?
 	m := make(map[string]string, 10)
 	for _, s := range env {
 		if s == "" {
@@ -157,7 +156,7 @@ func EnvSplit(env []string) map[string]string {
 	return m
 }
 
-// EnvOrOs returns `env` if it's not nil, otherwise returns [os.Environ].
+// EnvOrOs returns "env" if it's not nil, otherwise returns [os.Environ].
 func EnvOrOs(env []string) []string {
 	if env == nil {
 		return os.Environ()
@@ -165,12 +164,12 @@ func EnvOrOs(env []string) []string {
 	return env
 }
 
-// SetFrom sets environment variables from src map. Always returns new slice.
+// SetFrom sets environment variables from src map. Always returns a new slice.
 func SetFrom(env []string, src map[string]string) []string {
 	if len(src) == 0 {
 		return slices.Clone(env)
 	}
 	ret := NewEnv(env)
 	ret.EnvSetFrom(src)
-	return ret.EnvGetAll()
+	return ret.EnvAll()
 }
