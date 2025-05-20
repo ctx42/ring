@@ -5,12 +5,6 @@ package ringtest
 
 import (
 	"bytes"
-	"io"
-	"maps"
-	"os"
-	"slices"
-	"sort"
-	"time"
 
 	"github.com/ctx42/testing/pkg/tester"
 	"github.com/ctx42/testing/pkg/tstkit"
@@ -18,102 +12,77 @@ import (
 	"github.com/ctx42/ring/pkg/ring"
 )
 
-// WithEnv is an option for [New] setting the environment to use.
-func WithEnv(env []string) func(*Tester) {
-	return func(tst *Tester) { tst.hidEnv = ring.NewEnv(env) }
-}
-
-// WithName is an option for [New] setting program name.
-func WithName(name string) func(*Tester) {
-	return func(tst *Tester) { tst.name = name }
-}
-
-// WithMeta is an option for [New] setting ring metadata.
-func WithMeta(m map[string]any) func(*Tester) {
-	return func(tst *Tester) { tst.m = m }
-}
-
-// WithClock is an option for [New] setting clock function.
-func WithClock(clock ring.Clock) func(*Tester) {
-	return func(tst *Tester) { tst.clock = clock }
-}
-
-// Sort works like [sort.Strings] but returns sorted slice.
-func Sort(in []string) []string {
-	sort.Strings(in)
-	return in
-}
-
-// Hide embedded fields.
-type (
-	hidEnv = ring.Env
-)
-
 // Tester represents CLI test helper.
 type Tester struct {
-	hidEnv                // Environment.
-	m      map[string]any // Metadata.
-	sin    *bytes.Buffer  // Buffer representing standard input.
-	sout   *tstkit.Buffer // Buffer to collect stdout writes.
-	eout   *tstkit.Buffer // Buffer to collect stderr writes.
-	clock  ring.Clock     // Function returning current time in UTC.
-	name   string         // Program name.
-	t      tester.T       // The test manager.
+	rng  *ring.Ring     // The test ring.
+	sin  *bytes.Buffer  // Buffer representing standard input.
+	sout *tstkit.Buffer // Buffer to collect stdout writes.
+	eout *tstkit.Buffer // Buffer to collect stderr writes.
+	t    tester.T       // The test manager.
 }
 
-// New returns new instance of Tester.
-func New(t tester.T, opts ...func(*Tester)) *Tester {
+// New returns new instance of [Tester] with given options. By default, the
+// constructed [ring.Ring] test instance is returned with:
+//
+//   - name set to the current program name,
+//   - arguments set to empty slice,
+//   - environment set to [os.Environ],
+//   - metadata set to an empty map,
+//   - clock set to [ring.NowUTC],
+//   - standard input set to empty [bytes.Buffer],
+//   - standard output set to [tstkit.DryBuffer],
+//   - standard error set to [tstkit.DryBuffer],
+func New(t tester.T, opts ...ring.Option) *Tester {
 	t.Helper()
+	opts = append([]ring.Option{ring.WithArgs(nil)}, opts...)
 	tst := &Tester{
-		sin:   &bytes.Buffer{},
-		sout:  tstkit.DryBuffer(t, "stdout"),
-		eout:  tstkit.DryBuffer(t, "stderr"),
-		clock: ring.Now,
-		name:  os.Args[0],
-		t:     t,
+		rng: ring.New(opts...),
+		t:   t,
 	}
-	for _, opt := range opts {
-		opt(tst)
+	if tst.sin == nil {
+		tst.sin = &bytes.Buffer{}
 	}
-	if tst.EnvIsNil() {
-		tst.hidEnv = ring.NewEnv(os.Environ())
+	if tst.sout == nil {
+		tst.sout = tstkit.DryBuffer(t, "stdout")
 	}
-	if tst.m == nil {
-		tst.m = make(map[string]any, 10)
+	if tst.eout == nil {
+		tst.eout = tstkit.DryBuffer(t, "stderr")
 	}
 	return tst
 }
 
 // Ring returns a command environment based on [Tester] fields.
-func (tst *Tester) Ring(args ...string) ring.Ring {
+func (tst *Tester) Ring(args ...string) *ring.Ring {
 	opts := []ring.Option{
-		ring.WithEnv(slices.Clone(tst.EnvGetAll())),
-		ring.WithMeta(maps.Clone(tst.m)),
-		ring.WithClock(tst.clock),
+		ring.WithEnv(tst.rng.EnvAll()),
+		ring.WithMeta(tst.rng.MetaAll()),
+		ring.WithClock(tst.rng.Clock()),
+		ring.WithName(tst.rng.Name()),
 		ring.WithArgs(args),
 	}
-	return ring.New(opts...).
-		WithName(tst.name).
-		WithStdin(tst.sin).
-		WithStdout(tst.sout).
-		WithStderr(tst.eout)
+	rng := ring.New(opts...)
+	rng.SetStdin(tst.sin)
+	rng.SetStdout(tst.sout)
+	rng.SetStderr(tst.eout)
+	return rng
 }
 
 // Streams returns standard streams based on [Tester] fields.
-func (tst *Tester) Streams() ring.Streams {
-	return ring.StdIO{}.
-		WithStdin(tst.sin).
-		WithStdout(tst.sout).
-		WithStderr(tst.eout)
+func (tst *Tester) Streams() *ring.IO {
+	ios := ring.NewIO()
+	ios.SetStdin(tst.sin)
+	ios.SetStdout(tst.sout)
+	ios.SetStderr(tst.eout)
+	return ios
 }
 
-// WithStdin set buffer to read from as standard input.
-func (tst *Tester) WithStdin(sin *bytes.Buffer) *Tester {
+// SetStdin set buffer to read from as standard input.
+func (tst *Tester) SetStdin(sin *bytes.Buffer) *Tester {
 	tst.sin = sin
 	return tst
 }
 
-// WetStdout sets expectation that standard output will be written to.
+// WetStdout sets the expectation that standard output will be written to.
 func (tst *Tester) WetStdout() *Tester {
 	tst.t.Helper()
 	tst.sout = tstkit.WetBuffer(tst.t, "stdout")
@@ -133,8 +102,6 @@ func (tst *Tester) WetStderr() *Tester {
 // ResetStderr resets the standard error buffer removing all written data.
 func (tst *Tester) ResetStderr() { tst.eout.Reset() }
 
-func (tst *Tester) Name() string            { return tst.name }
-func (tst *Tester) Stdin() io.Reader        { return tst.sin }
-func (tst *Tester) Stdout() string          { return tst.sout.String() }
-func (tst *Tester) Stderr() string          { return tst.eout.String() }
-func (tst *Tester) Clock() func() time.Time { return tst.clock }
+func (tst *Tester) Stdin() string  { return tst.sin.String() }
+func (tst *Tester) Stdout() string { return tst.sout.String() }
+func (tst *Tester) Stderr() string { return tst.eout.String() }

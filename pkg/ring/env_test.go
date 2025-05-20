@@ -6,7 +6,6 @@ package ring
 import (
 	"os"
 	"slices"
-	"sort"
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
@@ -65,9 +64,24 @@ var envUnsetTests = []struct {
 	wantEnv   []string
 }{
 	{"empty", nil, "A", nil},
-	{"delete first", []string{"A=1", "B=2", "C=3"}, "A", []string{"B=2", "C=3"}},
-	{"delete middle", []string{"A=1", "B=2", "C=3"}, "B", []string{"A=1", "C=3"}},
-	{"delete last", []string{"A=1", "B=2", "C=3"}, "C", []string{"A=1", "B=2"}},
+	{
+		"delete the first",
+		[]string{"A=1", "B=2", "C=3"},
+		"A",
+		[]string{"B=2", "C=3"},
+	},
+	{
+		"delete middle",
+		[]string{"A=1", "B=2", "C=3"},
+		"B",
+		[]string{"A=1", "C=3"},
+	},
+	{
+		"delete the last",
+		[]string{"A=1", "B=2", "C=3"},
+		"C",
+		[]string{"A=1", "B=2"},
+	},
 }
 
 func Test_NewEnv(t *testing.T) {
@@ -76,8 +90,8 @@ func Test_NewEnv(t *testing.T) {
 		have := NewEnv(nil)
 
 		// --- Then ---
-		assert.NotNil(t, have.e)
-		assert.Len(t, 0, have.e)
+		assert.NotNil(t, have.env)
+		assert.Len(t, 0, have.env)
 	})
 
 	t.Run("not nil argument", func(t *testing.T) {
@@ -88,9 +102,9 @@ func Test_NewEnv(t *testing.T) {
 		have := NewEnv(want)
 
 		// --- Then ---
-		assert.Len(t, 2, have.e)
-		assert.HasKeyValue(t, "A", "1", have.e)
-		assert.HasKeyValue(t, "B", "2", have.e)
+		assert.Len(t, 2, have.env)
+		assert.HasKeyValue(t, "A", "1", have.env)
+		assert.HasKeyValue(t, "B", "2", have.env)
 	})
 }
 
@@ -125,81 +139,52 @@ func Test_Env_EnvGet_tabular(t *testing.T) {
 	}
 }
 
-func Test_Env_EnvGetAll(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
-		// --- Given ---
-		want := []string{"A=1", "B=2"}
-		env := NewEnv(want)
-
-		// --- When ---
-		have := env.EnvGetAll()
-
-		// --- Then ---
-		assert.NotSame(t, want, Sort(have))
-		assert.Equal(t, want, have)
-	})
-
-	t.Run("empty slice", func(t *testing.T) {
-		// --- Given ---
-		env := NewEnv(nil)
-
-		// --- When ---
-		have := env.EnvGetAll()
-
-		// --- Then ---
-		assert.Nil(t, have)
-		assert.Len(t, 0, have)
-	})
-}
-
-func Test_Env_EnvSet_EnvGet(t *testing.T) {
+func Test_Env_EnvSet(t *testing.T) {
 	t.Run("set", func(t *testing.T) {
 		// --- Given ---
-		env := NewEnv(nil)
+		env := &Env{env: map[string]string{}}
 
 		// --- When ---
 		env.EnvSet("A", "1")
 
 		// --- Then ---
-		assert.Equal(t, "1", env.EnvGet("A"))
+		assert.Equal(t, map[string]string{"A": "1"}, env.env)
 	})
 
 	t.Run("set existing", func(t *testing.T) {
 		// --- Given ---
-		env := NewEnv([]string{"A=1", "B=2", "C=3"})
+		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
 
 		// --- When ---
 		env.EnvSet("A", "2")
 
 		// --- Then ---
-		assert.Equal(t, "2", env.EnvGet("A"))
-		assert.Equal(t, map[string]string{"A": "2", "B": "2", "C": "3"}, env.e)
+		assert.Equal(t, map[string]string{"A": "2", "B": "2"}, env.env)
 	})
 }
 
 func Test_Env_EnvSetFrom(t *testing.T) {
 	t.Run("set", func(t *testing.T) {
 		// --- Given ---
-		want := []string{"A=1", "B=2"}
-		env := NewEnv(want)
+		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
 
 		// --- When ---
 		env.EnvSetFrom(map[string]string{"A": "-1", "C": "3"})
 
 		// --- Then ---
-		assert.Equal(t, map[string]string{"A": "-1", "B": "2", "C": "3"}, env.e)
+		want := map[string]string{"A": "-1", "B": "2", "C": "3"}
+		assert.Equal(t, want, env.env)
 	})
 
 	t.Run("nil map", func(t *testing.T) {
 		// --- Given ---
-		want := []string{"A=1", "B=2"}
-		env := NewEnv(want)
+		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
 
 		// --- When ---
 		env.EnvSetFrom(nil)
 
 		// --- Then ---
-		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, env.e)
+		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, env.env)
 	})
 }
 
@@ -213,9 +198,34 @@ func Test_Env_EnvUnset_tabular(t *testing.T) {
 			env.EnvUnset(tc.deleteKey)
 
 			// --- Then ---
-			assert.Equal(t, tc.wantEnv, Sort(env.EnvGetAll()))
+			assert.Equal(t, tc.wantEnv, Sort(env.EnvAll()))
 		})
 	}
+}
+
+func Test_Env_EnvAll(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
+
+		// --- When ---
+		have := env.EnvAll()
+
+		// --- Then ---
+		assert.Equal(t, []string{"A=1", "B=2"}, Sort(have))
+	})
+
+	t.Run("empty environment", func(t *testing.T) {
+		// --- Given ---
+		env := &Env{}
+
+		// --- When ---
+		have := env.EnvAll()
+
+		// --- Then ---
+		assert.Nil(t, have)
+		assert.Len(t, 0, have)
+	})
 }
 
 func Test_EnvSet(t *testing.T) {
@@ -227,8 +237,7 @@ func Test_EnvSet(t *testing.T) {
 		have := EnvSet(env, "B", "2")
 
 		// --- Then ---
-		sort.Strings(have)
-		assert.Equal(t, []string{"A=1", "B=2"}, have)
+		assert.Equal(t, []string{"A=1", "B=2"}, Sort(have))
 	})
 
 	t.Run("existing", func(t *testing.T) {
@@ -239,8 +248,7 @@ func Test_EnvSet(t *testing.T) {
 		have := EnvSet(env, "B", "4")
 
 		// --- Then ---
-		sort.Strings(have)
-		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, have)
+		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, Sort(have))
 	})
 }
 
@@ -257,30 +265,6 @@ func Test_EnvUnset_tabular(t *testing.T) {
 			assert.Equal(t, tc.wantEnv, Sort(have))
 		})
 	}
-}
-
-func Test_Env_EnvIsNil(t *testing.T) {
-	t.Run("is nil", func(t *testing.T) {
-		// --- Given ---
-		var env Env
-
-		// --- When ---
-		have := env.EnvIsNil()
-
-		// --- Then ---
-		assert.True(t, have)
-	})
-
-	t.Run("is not nil", func(t *testing.T) {
-		// --- Given ---
-		env := NewEnv(nil)
-
-		// --- When ---
-		have := env.EnvIsNil()
-
-		// --- Then ---
-		assert.False(t, have)
-	})
 }
 
 func Test_EnvLookup_tabular(t *testing.T) {
@@ -308,7 +292,7 @@ func Test_EnvGet_tabular(t *testing.T) {
 	}
 }
 
-func Test_EnvGetOr_tabular(t *testing.T) {
+func Test_EnvGetDefault_tabular(t *testing.T) {
 	tt := []struct {
 		testN string
 
@@ -325,7 +309,7 @@ func Test_EnvGetOr_tabular(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.testN, func(t *testing.T) {
 			// --- When ---
-			have := EnvGetOr(tc.env, tc.key, tc.def)
+			have := EnvGetDefault(tc.env, tc.key, tc.def)
 
 			// --- Ten ---
 			assert.Equal(t, tc.want, have)
@@ -345,6 +329,8 @@ func Test_EnvSplit_tabular(t *testing.T) {
 		{"regular", []string{"A=B"}, map[string]string{"A": "B"}},
 		{"multi equal sign", []string{"A=B=C"}, map[string]string{"A": "B=C"}},
 		{"empty value", []string{"A="}, map[string]string{"A": ""}},
+		{"just a key", []string{"A"}, map[string]string{}},
+		{"just a value", []string{"=A"}, map[string]string{}},
 	}
 
 	for _, tc := range tt {
@@ -389,8 +375,7 @@ func Test_SetFrom(t *testing.T) {
 		have := SetFrom(env, map[string]string{"A": "-1", "C": "3"})
 
 		// --- Then ---
-		sort.Strings(have)
-		assert.Equal(t, []string{"A=-1", "B=2", "C=3"}, have)
+		assert.Equal(t, []string{"A=-1", "B=2", "C=3"}, Sort(have))
 		assert.NotSame(t, env, have)
 	})
 

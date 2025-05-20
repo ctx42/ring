@@ -5,10 +5,8 @@ package ring
 
 import (
 	"errors"
-	"io"
 	"maps"
 	"os"
-	"slices"
 	"time"
 )
 
@@ -17,7 +15,7 @@ var (
 	// ErrReqMeta indicates a required metadata key is missing.
 	ErrReqMeta = errors.New("required ring metadata key")
 
-	// ErrInvMeta indicates a metadata key is invalid due to incorrect type,
+	// ErrInvMeta indicates a metadata key is invalid due to an incorrect type,
 	// format, or value.
 	ErrInvMeta = errors.New("invalid ring metadata key")
 )
@@ -33,6 +31,11 @@ func WithEnv(env []string) Option {
 	return func(rng *Ring) { rng.hidEnv = NewEnv(env) }
 }
 
+// WithName configures a [Ring] with the given program name.
+func WithName(name string) Option {
+	return func(rng *Ring) { rng.name = name }
+}
+
 // WithArgs configures a [Ring] with the given program arguments (excluding
 // the program name).
 func WithArgs(args []string) Option {
@@ -45,40 +48,42 @@ func WithClock(clk Clock) Option {
 }
 
 // WithMeta configures a [Ring] with the given metadata.
-func WithMeta(m map[string]any) Option { return func(rng *Ring) { rng.m = m } }
+func WithMeta(meta map[string]any) Option {
+	return func(rng *Ring) { rng.meta = meta }
+}
 
-type hidEnv = Env // Do not export embedded.
+// Hide embedded fields.
+type (
+	hidEnv = Env
+	hidIO  = IO
+)
 
-var _ Streams = Ring{} // Compile time check.
+var _ Streamer = Ring{} // Compile time check.
 
 // Ring represents a program execution context, encapsulating standard I/O
 // streams, environment variables, arguments, a clock, and metadata.
 type Ring struct {
-	hidEnv                // Program environment.
-	io     StdIO          // Standard I/O streams.
-	clock  Clock          // Function returning current time in UTC.
-	args   []string       // Program arguments (excluding program name).
-	name   string         // Program name.
-	m      map[string]any // Arbitrary metadata.
+	*hidEnv                // Program environment.
+	*hidIO                 // Standard I/O streams.
+	clock   Clock          // Function returning current time in UTC.
+	name    string         // Program name.
+	args    []string       // Program arguments (excluding program name).
+	meta    map[string]any // Arbitrary metadata.
 }
 
 // defaultRing returns a new [Ring] with default configuration.
 //
 // Configuration:
 //   - Standard I/O: [os.Stdin], [os.Stdout], [os.Stderr]
-//   - Clock: [Now]
-//   - Args: os.Args[1:] (excludes program name)
+//   - Clock: [NowUTC]
 //   - Name: os.Args[0] (program name)
+//   - Args: os.Args[1:] (excludes program name)
 //   - Environment: nil
 //   - Metadata: nil
-func defaultRing() Ring {
-	return Ring{
-		io: StdIO{
-			stdin:  os.Stdin,
-			stdout: os.Stdout,
-			stderr: os.Stderr,
-		},
-		clock: Now,
+func defaultRing() *Ring {
+	return &Ring{
+		hidIO: NewIO(),
+		clock: NowUTC,
 		name:  os.Args[0],
 		args:  os.Args[1:],
 	}
@@ -89,7 +94,7 @@ func defaultRing() Ring {
 // If no options are specified, it defaults to:
 //   - Standard I/O: [os.Stdin], [os.Stdout], [os.Stderr]
 //   - Environment: [os.Environ]
-//   - Clock: [Now]
+//   - Clock: [NowUTC]
 //   - Args: os.Args[1:]
 //   - Name: os.Args[0]
 //   - Metadata: empty map
@@ -100,118 +105,38 @@ func defaultRing() Ring {
 //	  WithEnv([]string{"KEY=value"}),
 //	  WithArgs([]string{"-a", "arg1"}),
 //	)
-func New(opts ...Option) Ring {
+func New(opts ...Option) *Ring {
 	rng := defaultRing()
 	for _, opt := range opts {
-		opt(&rng)
+		opt(rng)
 	}
-	if rng.hidEnv.e == nil {
+	if rng.hidEnv == nil {
 		rng.hidEnv = NewEnv(os.Environ())
 	}
-	if rng.m == nil {
-		rng.m = make(map[string]any, 10)
+	if rng.meta == nil {
+		rng.meta = make(map[string]any)
 	}
 	return rng
 }
 
-// Stdin returns the standard input.
-func (rng Ring) Stdin() io.Reader { return rng.io.stdin }
-
-// Stdout returns the standard output.
-func (rng Ring) Stdout() io.Writer { return rng.io.stdout }
-
-// Stderr returns the standard error.
-func (rng Ring) Stderr() io.Writer { return rng.io.stderr }
-
 // Clock returns function returning current time in UTC.
-func (rng Ring) Clock() func() time.Time { return rng.clock }
+func (rng *Ring) Clock() func() time.Time { return rng.clock }
 
 // Args returns the program arguments, excluding the program name.
-func (rng Ring) Args() []string { return rng.args }
+func (rng *Ring) Args() []string { return rng.args }
 
 // Name returns program name.
-func (rng Ring) Name() string { return rng.name }
-
-// WithStdin returns a new [Ring] with the specified standard input stream.
-func (rng Ring) WithStdin(sin io.Reader) Ring {
-	rng.io.stdin = sin
-	return rng
-}
-
-// WithStdout returns a new [Ring] with the specified standard output stream.
-func (rng Ring) WithStdout(sout io.Writer) Ring {
-	rng.io.stdout = sout
-	return rng
-}
-
-// WithStderr returns a new [Ring] with the specified standard error stream.
-func (rng Ring) WithStderr(eout io.Writer) Ring {
-	rng.io.stderr = eout
-	return rng
-}
-
-// WithArgs returns a new [Ring] with the specified program arguments.
-func (rng Ring) WithArgs(args []string) Ring {
-	rng.args = args
-	return rng
-}
-
-// WithName returns a new [Ring] with the specified program name.
-func (rng Ring) WithName(name string) Ring {
-	rng.name = name
-	return rng
-}
-
-// Env returns a copy of the environment as an [Env].
-func (rng Ring) Env() Env { return NewEnv(slices.Clone(rng.EnvGetAll())) }
-
-// EnvSet returns a new [Ring] with the specified environment variable set.
-func (rng Ring) EnvSet(key, value string) Ring {
-	rng.hidEnv = NewEnv(slices.Clone(rng.EnvGetAll()))
-	rng.hidEnv.EnvSet(key, value)
-	return rng
-}
-
-// EnvSetBulk returns a new [Ring] with the specified environment variables
-// appended to the existing environment.
-func (rng Ring) EnvSetBulk(env []string) Ring {
-	have := append(slices.Clone(rng.EnvGetAll()), env...)
-	rng.hidEnv = NewEnv(have)
-	return rng
-}
-
-// EnvUnset returns a new [Ring] with the specified environment variable
-// removed.
-func (rng Ring) EnvUnset(key string) Ring {
-	rng.hidEnv = NewEnv(slices.Clone(rng.EnvGetAll()))
-	rng.hidEnv.EnvUnset(key)
-	return rng
-}
+func (rng *Ring) Name() string { return rng.name }
 
 // MetaSet returns [Ring] with the specified metadata key-value pair set.
-// TODO(rz): explain it does not work like env. It is modified in all instances.
-func (rng Ring) MetaSet(key string, value any) Ring {
-	rng.m[key] = value
-	return rng
+func (rng *Ring) MetaSet(key string, value any) {
+	rng.meta[key] = value
 }
 
 // MetaDelete returns [Ring] with the specified metadata key removed.
-// TODO(rz): explain it does not work like env. It is modified in all instances.
-func (rng Ring) MetaDelete(key string) Ring {
-	delete(rng.m, key)
-	return rng
+func (rng *Ring) MetaDelete(key string) {
+	delete(rng.meta, key)
 }
 
 // MetaAll returns a clone of the metadata map.
-func (rng Ring) MetaAll() map[string]any { return maps.Clone(rng.m) }
-
-// IsZero returns true if the [Ring] is its zero value (e.g., Ring{}), meaning
-// it has no environment, metadata, arguments, or name.
-func (rng Ring) IsZero() bool {
-	if len(rng.hidEnv.e) > 0 {
-		return false
-	}
-	return (rng.m == nil || len(rng.m) == 0) &&
-		len(rng.args) == 0 &&
-		rng.name == ""
-}
+func (rng *Ring) MetaAll() map[string]any { return maps.Clone(rng.meta) }

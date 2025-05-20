@@ -22,7 +22,7 @@ arguments, and time. By avoiding reliance on global state (e.g., `os.Stdin`,
 
 # Key Features
 
-- **Dependency Injection**: inject custom standard I/O streams, environment variables, arguments, and a clock function.
+- **Dependency Injection**: inject custom standard I/O streams, environment variables, program name, arguments, and a clock.
 - **Test-Friendly**: simplifies mocking of global dependencies for unit tests.
 - **Metadata Support**: store and manage arbitrary key-value metadata.
 
@@ -60,7 +60,7 @@ func main() {
     // Default Ring:
     //  - Standard I/O: [os.Stdin], [os.Stdout], [os.Stderr]
     //  - Environment: [os.Environ]
-    //  - Clock: [Now]
+    //  - Clock: [NowUTC]
     //  - Args: os.Args[1:]
     //  - Name: os.Args[0]
     //  - Metadata: empty map
@@ -95,15 +95,16 @@ import (
 func Test_ProgramOutput(t *testing.T) {
     // --- Given ---
     var sout bytes.Buffer // Create a buffer to capture output.
+    clock := tstkit.ClockFixed(time.Date(2000, 1, 2, 3, 4, 5, 6, nil))
     rng := ring.New(
-        ring.WithStdout(&sout), // Set custom standard output.
+        ring.SetStdout(&sout), // Set custom standard output.
         ring.WithEnv([]string{"KEY=value"}), // Inject environment.
         ring.WithArgs([]string{"-pint", "KEY"}), // Set program arguments.
-        ring.WithClock(tstkit.ClockFixed(time.Date(2000, 1, 2, 3, 4, 5, 6, nil))), // Inject clock.
+        ring.WithClock(clock), // Inject clock.
     )
 
     // --- When ---
-    have := Main(t.Context(), rng) // Run program.
+    have := Main(t.Context(), rng) // Run a program.
 
     // --- Then ---
     assert.Equal(t, 0, have)                // Test exit code.

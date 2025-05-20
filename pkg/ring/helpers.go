@@ -7,5 +7,5 @@ import (
 	"time"
 )
 
-// Now returns the current time in UTC, equivalent to [time.Now].UTC().
-func Now() time.Time { return time.Now().UTC() }
+// NowUTC returns the current time in UTC, equivalent to time.Now().UTC().
+func NowUTC() time.Time { return time.Now().UTC() }
