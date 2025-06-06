@@ -1,3 +1,6 @@
+## v0.2.0 (Fri, 06 Jun 2025 20:27:20 UTC)
+- Add Ring metadata access methods and update documentation.
+
 ## v0.1.0 (Fri, 06 Jun 2025 13:50:45 UTC)
 - Add source Excalidraw file.
 
