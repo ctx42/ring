@@ -121,6 +121,22 @@ func Test_Tester_Ring(t *testing.T) {
 		// --- Then ---
 		assert.Equal(t, "my", rng.Name())
 	})
+
+	t.Run("with clone of metadata", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(2)
+		tspy.Close()
+
+		m := map[string]any{"A": 1}
+		tst := New(tspy, ring.WithMeta(m))
+
+		// --- When ---
+		rng := tst.Ring()
+
+		// --- Then ---
+		assert.NotSame(t, m, rng.MetaAll())
+	})
 }
 
 func Test_Tester_Streams(t *testing.T) {

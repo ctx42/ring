@@ -5,6 +5,7 @@ package ringtest
 
 import (
 	"bytes"
+	"maps"
 
 	"github.com/ctx42/testing/pkg/tester"
 	"github.com/ctx42/testing/pkg/tstkit"
@@ -55,7 +56,7 @@ func New(t tester.T, opts ...ring.Option) *Tester {
 func (tst *Tester) Ring(args ...string) *ring.Ring {
 	opts := []ring.Option{
 		ring.WithEnv(tst.rng.EnvAll()),
-		ring.WithMeta(tst.rng.MetaAll()),
+		ring.WithMeta(maps.Clone(tst.rng.MetaAll())),
 		ring.WithClock(tst.rng.Clock()),
 		ring.WithName(tst.rng.Name()),
 		ring.WithArgs(args),

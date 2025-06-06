@@ -5,7 +5,6 @@ package ring
 
 import (
 	"errors"
-	"maps"
 	"os"
 	"time"
 )
@@ -128,15 +127,32 @@ func (rng *Ring) Args() []string { return rng.args }
 // Name returns program name.
 func (rng *Ring) Name() string { return rng.name }
 
-// MetaSet returns [Ring] with the specified metadata key-value pair set.
+// MetaSet sets the metadata value for the given key. If the key already exists,
+// its value is overwritten. The value may be any type, including nil.
 func (rng *Ring) MetaSet(key string, value any) {
 	rng.meta[key] = value
 }
 
-// MetaDelete returns [Ring] with the specified metadata key removed.
+// MetaGet retrieves the metadata value associated with the given key. If the
+// key exists, it returns the value, which may be nil or empty. If the key does
+// not exist, it returns nil.
+func (rng *Ring) MetaGet(key string) any {
+	return rng.meta[key]
+}
+
+// MetaLookup retrieves the metadata value associated with the given key. If
+// the key exists in the metadata, it returns the value (which may be nil or
+// empty) and true. If the key does not exist, it returns nil and false.
+func (rng *Ring) MetaLookup(key string) (any, bool) {
+	val, ok := rng.meta[key]
+	return val, ok
+}
+
+// MetaDelete removes the metadata value associated with the given key. If the
+// key does not exist, the method has no effect.
 func (rng *Ring) MetaDelete(key string) {
 	delete(rng.meta, key)
 }
 
-// MetaAll returns a clone of the metadata map.
-func (rng *Ring) MetaAll() map[string]any { return maps.Clone(rng.meta) }
+// MetaAll returns metadata map.
+func (rng *Ring) MetaAll() map[string]any { return rng.meta }

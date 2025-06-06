@@ -171,6 +171,56 @@ func Test_Ring_MetaSet(t *testing.T) {
 	})
 }
 
+func Test_Ring_MetaGet(t *testing.T) {
+	t.Run("get existing", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{meta: map[string]any{"A": 1}}
+
+		// --- When ---
+		have := rng.MetaGet("A")
+
+		// --- Then ---
+		assert.Equal(t, 1, have)
+	})
+
+	t.Run("get not existing", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{meta: map[string]any{}}
+
+		// --- When ---
+		have := rng.MetaGet("B")
+
+		// --- Then ---
+		assert.Nil(t, have)
+	})
+}
+
+func Test_Ring_MetaLookup(t *testing.T) {
+	t.Run("get existing", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{meta: map[string]any{"A": 1}}
+
+		// --- When ---
+		have, ok := rng.MetaLookup("A")
+
+		// --- Then ---
+		assert.Equal(t, 1, have)
+		assert.True(t, ok)
+	})
+
+	t.Run("get not existing", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{meta: map[string]any{}}
+
+		// --- When ---
+		have, ok := rng.MetaLookup("B")
+
+		// --- Then ---
+		assert.Nil(t, have)
+		assert.False(t, ok)
+	})
+}
+
 func Test_Ring_MetaDelete(t *testing.T) {
 	t.Run("delete", func(t *testing.T) {
 		// --- Given ---
@@ -204,5 +254,5 @@ func Test_Ring_MetaAll(t *testing.T) {
 
 	// --- Then ---
 	assert.Equal(t, map[string]any{"A": 1}, have)
-	assert.NotSame(t, rng.meta, have)
+	assert.Same(t, rng.meta, have)
 }
