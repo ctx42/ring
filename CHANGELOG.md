@@ -1,3 +1,6 @@
+## v0.3.0 (Sun, 08 Jun 2025 17:36:34 UTC)
+- Update dependencies and add Ring.SetArgs method.
+
 ## v0.2.0 (Fri, 06 Jun 2025 20:27:20 UTC)
 - Add Ring metadata access methods and update documentation.
 
