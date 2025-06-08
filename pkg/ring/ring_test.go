@@ -136,6 +136,19 @@ func Test_Ring_Args(t *testing.T) {
 	assert.Same(t, args, have)
 }
 
+func Test_Ring_SetArgs(t *testing.T) {
+	// --- Given ---
+	args := []string{"-arg0", "-arg1"}
+	rng := &Ring{}
+
+	// --- When ---
+	have := rng.SetArgs(args)
+
+	// --- Then ---
+	assert.Same(t, rng, have)
+	assert.Same(t, args, rng.args)
+}
+
 func Test_Ring_Name(t *testing.T) {
 	// --- Given ---
 	rng := &Ring{name: "abc"}

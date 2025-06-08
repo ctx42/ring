@@ -124,6 +124,12 @@ func (rng *Ring) Clock() func() time.Time { return rng.clock }
 // Args returns the program arguments, excluding the program name.
 func (rng *Ring) Args() []string { return rng.args }
 
+// SetArgs sets the program arguments, excluding the program name.
+func (rng *Ring) SetArgs(args []string) *Ring {
+	rng.args = args
+	return rng
+}
+
 // Name returns program name.
 func (rng *Ring) Name() string { return rng.name }
 
