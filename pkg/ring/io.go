@@ -52,3 +52,12 @@ func (ios *IO) SetStdout(sout io.Writer) { ios.stdout = sout }
 
 // SetStderr returns [IO] with the given standard error.
 func (ios *IO) SetStderr(eout io.Writer) { ios.stderr = eout }
+
+// IOClone creates a copy of the current [IO] instance with identical streams.
+func (ios *IO) IOClone() *IO {
+	return &IO{
+		stdin:  ios.stdin,
+		stdout: ios.stdout,
+		stderr: ios.stderr,
+	}
+}

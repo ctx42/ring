@@ -4,6 +4,7 @@
 package ring
 
 import (
+	"maps"
 	"os"
 	"slices"
 	"strings"
@@ -76,6 +77,13 @@ func (env *Env) EnvSetFrom(src map[string]string) {
 	}
 }
 
+// EnvSetWith sets multiple environment variables from the given slice. The
+// input slice should contain "key=value" strings, as produced by [os.Environ].
+// Overwrites existing variables with the same key.
+func (env *Env) EnvSetWith(src []string) {
+	env.EnvSetFrom(EnvSplit(src))
+}
+
 // EnvUnset unsets a single environment variable.
 func (env *Env) EnvUnset(key string) { delete(env.env, key) }
 
@@ -91,6 +99,9 @@ func (env *Env) EnvAll() []string {
 	}
 	return ret
 }
+
+// EnvClone returns a clone of the environment.
+func (env *Env) EnvClone() *Env { return &Env{env: maps.Clone(env.env)} }
 
 // EnvLookup retrieves the value of the "env" variable named by the key. If the
 // variable is present in the "env", the value (which may be empty) is returned

@@ -6,6 +6,7 @@ package ring
 import (
 	"errors"
 	"os"
+	"slices"
 	"time"
 )
 
@@ -162,3 +163,17 @@ func (rng *Ring) MetaDelete(key string) {
 
 // MetaAll returns metadata map.
 func (rng *Ring) MetaAll() map[string]any { return rng.meta }
+
+// Clone creates a deep copy of the [Ring] instance (except metadata structure).
+//
+// Changes to metadata will be visible in all clones.
+func (rng *Ring) Clone() *Ring {
+	return &Ring{
+		hidEnv: rng.hidEnv.EnvClone(),
+		hidIO:  rng.hidIO.IOClone(),
+		clock:  rng.clock,
+		name:   rng.name,
+		args:   slices.Clone(rng.args),
+		meta:   rng.meta,
+	}
+}

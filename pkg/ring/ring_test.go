@@ -269,3 +269,22 @@ func Test_Ring_MetaAll(t *testing.T) {
 	assert.Equal(t, map[string]any{"A": 1}, have)
 	assert.Same(t, rng.meta, have)
 }
+
+func Test_Ring_Clone(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		rng := New()
+
+		// --- When ---
+		have := rng.Clone()
+
+		// --- Then ---
+		assert.NotSame(t, rng, have)
+		assert.NotSame(t, rng.hidEnv, have.hidEnv)
+		assert.NotSame(t, rng.hidIO, have.hidIO)
+		assert.Same(t, rng.clock, have.clock)
+		assert.Equal(t, rng.name, have.name)
+		assert.NotSame(t, rng.args, have.args)
+		assert.Same(t, rng.meta, have.meta)
+	})
+}

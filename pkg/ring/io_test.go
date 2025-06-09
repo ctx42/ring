@@ -80,3 +80,22 @@ func Test_IO_SetStderr(t *testing.T) {
 	// --- Then ---
 	assert.Same(t, other, ios.stderr)
 }
+
+func Test_IO_IOClone(t *testing.T) {
+	// --- Given ---
+	ios := &IO{
+		stdin:  &bytes.Buffer{},
+		stdout: &bytes.Buffer{},
+		stderr: &bytes.Buffer{},
+	}
+
+	// --- When ---
+	have := ios.IOClone()
+
+	// --- Ten ---
+	assert.NotSame(t, ios, have)
+	assert.Same(t, ios.stdin, have.stdin)
+	assert.Same(t, ios.stdout, have.stdout)
+	assert.Same(t, ios.stderr, have.stderr)
+	assert.Fields(t, 3, IO{})
+}

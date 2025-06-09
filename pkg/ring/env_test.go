@@ -188,6 +188,31 @@ func Test_Env_EnvSetFrom(t *testing.T) {
 	})
 }
 
+func Test_Env_EnvSetWith(t *testing.T) {
+	t.Run("set", func(t *testing.T) {
+		// --- Given ---
+		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
+
+		// --- When ---
+		env.EnvSetWith([]string{"A=-1", "C=3"})
+
+		// --- Then ---
+		want := map[string]string{"A": "-1", "B": "2", "C": "3"}
+		assert.Equal(t, want, env.env)
+	})
+
+	t.Run("nil map", func(t *testing.T) {
+		// --- Given ---
+		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
+
+		// --- When ---
+		env.EnvSetWith(nil)
+
+		// --- Then ---
+		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, env.env)
+	})
+}
+
 func Test_Env_EnvUnset_tabular(t *testing.T) {
 	for _, tc := range envUnsetTests {
 		t.Run(tc.testN, func(t *testing.T) {
@@ -226,6 +251,20 @@ func Test_Env_EnvAll(t *testing.T) {
 		assert.Nil(t, have)
 		assert.Len(t, 0, have)
 	})
+}
+
+func Test_Env_EnvClone(t *testing.T) {
+	// --- Given ---
+	env := &Env{env: map[string]string{"A": "1"}}
+
+	// --- When ---
+	have := env.EnvClone()
+
+	// --- Then ---
+	assert.Equal(t, map[string]string{"A": "1"}, env.env)
+	assert.NotSame(t, env.env, have.env)
+	assert.NotSame(t, env, have)
+	assert.Fields(t, 1, Env{})
 }
 
 func Test_EnvSet(t *testing.T) {
