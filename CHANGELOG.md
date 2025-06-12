@@ -1,3 +1,6 @@
+## v0.4.1 (Thu, 12 Jun 2025 07:47:13 UTC)
+- Update dependencies.
+
 ## v0.4.0 (Mon, 09 Jun 2025 07:22:50 UTC)
 - Add Clone methods for Ring, IO, and Env structures. Add a convenience method `Env.EnvSetWith(src []string)`.
 
