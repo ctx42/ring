@@ -14,3 +14,7 @@ github.com/ctx42/testing v0.14.0 h1:LeUSRJ8O16q7pJuRTG+vV6ufYkY+dB8v0v00lNtAnqs=
 github.com/ctx42/testing v0.14.0/go.mod h1:VHcxY4uhZQ8Lewevgmc9WHjJQc9CopJm9IAOTK5XbaM=
 github.com/ctx42/testing v0.14.2 h1:ZAWvBJiDbAZVO1SAOMA785iTHrZKHDrU/Xcev+7sScI=
 github.com/ctx42/testing v0.14.2/go.mod h1:VHcxY4uhZQ8Lewevgmc9WHjJQc9CopJm9IAOTK5XbaM=
+github.com/ctx42/testing v0.18.2 h1:swTzEKbxPxj7Sr/AeimoMRctATmlmmcjtXBDSrzeSVI=
+github.com/ctx42/testing v0.18.2/go.mod h1:VHcxY4uhZQ8Lewevgmc9WHjJQc9CopJm9IAOTK5XbaM=
+github.com/ctx42/testing v0.19.0 h1:9hUBZdreteGIJqbNJbldBRVbASoHoDz/f+CYthIMhQc=
+github.com/ctx42/testing v0.19.0/go.mod h1:VHcxY4uhZQ8Lewevgmc9WHjJQc9CopJm9IAOTK5XbaM=
