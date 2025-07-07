@@ -89,13 +89,13 @@ import (
 
     "github.com/ctx42/ring"
     "github.com/ctx42/testing/pkg/assert"
-    "github.com/ctx42/testing/pkg/tstkit"
+    "github.com/ctx42/testing/pkg/iokit"
 )
 
 func Test_ProgramOutput(t *testing.T) {
     // --- Given ---
     var sout bytes.Buffer // Create a buffer to capture output.
-    clock := tstkit.ClockFixed(time.Date(2000, 1, 2, 3, 4, 5, 6, nil))
+    clock := iokit.ClockFixed(time.Date(2000, 1, 2, 3, 4, 5, 6, nil))
     rng := ring.New(
         ring.SetStdout(&sout), // Set custom standard output.
         ring.WithEnv([]string{"KEY=value"}), // Inject environment.

@@ -7,19 +7,19 @@ import (
 	"bytes"
 	"maps"
 
+	"github.com/ctx42/testing/pkg/kit/iokit"
 	"github.com/ctx42/testing/pkg/tester"
-	"github.com/ctx42/testing/pkg/tstkit"
 
 	"github.com/ctx42/ring/pkg/ring"
 )
 
 // Tester represents CLI test helper.
 type Tester struct {
-	rng  *ring.Ring     // The test ring.
-	sin  *bytes.Buffer  // Buffer representing standard input.
-	sout *tstkit.Buffer // Buffer to collect stdout writes.
-	eout *tstkit.Buffer // Buffer to collect stderr writes.
-	t    tester.T       // The test manager.
+	rng  *ring.Ring    // The test ring.
+	sin  *bytes.Buffer // Buffer representing standard input.
+	sout *iokit.Buffer // Buffer to collect stdout writes.
+	eout *iokit.Buffer // Buffer to collect stderr writes.
+	t    tester.T      // The test manager.
 }
 
 // New returns new instance of [Tester] with given options. By default, the
@@ -31,8 +31,8 @@ type Tester struct {
 //   - metadata set to an empty map,
 //   - clock set to [ring.NowUTC],
 //   - standard input set to empty [bytes.Buffer],
-//   - standard output set to [tstkit.DryBuffer],
-//   - standard error set to [tstkit.DryBuffer],
+//   - standard output set to [iokit.DryBuffer],
+//   - standard error set to [iokit.DryBuffer],
 func New(t tester.T, opts ...ring.Option) *Tester {
 	t.Helper()
 	opts = append([]ring.Option{ring.WithArgs(nil)}, opts...)
@@ -44,10 +44,10 @@ func New(t tester.T, opts ...ring.Option) *Tester {
 		tst.sin = &bytes.Buffer{}
 	}
 	if tst.sout == nil {
-		tst.sout = tstkit.DryBuffer(t, "stdout")
+		tst.sout = iokit.DryBuffer(t, "stdout")
 	}
 	if tst.eout == nil {
-		tst.eout = tstkit.DryBuffer(t, "stderr")
+		tst.eout = iokit.DryBuffer(t, "stderr")
 	}
 	return tst
 }
@@ -86,7 +86,7 @@ func (tst *Tester) SetStdin(sin *bytes.Buffer) *Tester {
 // WetStdout sets the expectation that standard output will be written to.
 func (tst *Tester) WetStdout() *Tester {
 	tst.t.Helper()
-	tst.sout = tstkit.WetBuffer(tst.t, "stdout")
+	tst.sout = iokit.WetBuffer(tst.t, "stdout")
 	return tst
 }
 
@@ -96,7 +96,7 @@ func (tst *Tester) ResetStdout() { tst.sout.Reset() }
 // WetStderr sets expectation that standard error will be written to.
 func (tst *Tester) WetStderr() *Tester {
 	tst.t.Helper()
-	tst.eout = tstkit.WetBuffer(tst.t, "stderr")
+	tst.eout = iokit.WetBuffer(tst.t, "stderr")
 	return tst
 }
 
