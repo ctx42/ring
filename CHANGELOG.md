@@ -1,3 +1,6 @@
+## v0.4.4 (Mon, 07 Jul 2025 10:29:38 UTC)
+- Update dependencies.
+
 ## v0.4.3 (Sat, 21 Jun 2025 07:30:15 UTC)
 - Update dependencies.
 
