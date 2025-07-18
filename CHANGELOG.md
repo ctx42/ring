@@ -1,3 +1,6 @@
+## v0.4.5 (Fri, 18 Jul 2025 20:30:14 UTC)
+- chore: update dependencies.
+
 ## v0.4.4 (Mon, 07 Jul 2025 10:29:38 UTC)
 - Update dependencies.
 
