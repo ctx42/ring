@@ -1,3 +1,6 @@
+## v0.5.0 (Thu, 07 Aug 2025 10:42:47 UTC)
+- feat: add fs.FS support to the Ring.
+
 ## v0.4.5 (Fri, 18 Jul 2025 20:30:14 UTC)
 - chore: update dependencies.
 
