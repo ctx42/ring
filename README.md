@@ -64,7 +64,8 @@ func main() {
     //  - Args: os.Args[1:]
     //  - Name: os.Args[0]
     //  - Metadata: empty map
-    rng := ring.New()
+    //  - Filesystem: none
+    rng := ring.New(ring.WithFS(os.DirFS("some/path")))
 
     ctx := context.Background()
     
@@ -101,6 +102,7 @@ func Test_ProgramOutput(t *testing.T) {
         ring.WithEnv([]string{"KEY=value"}), // Inject environment.
         ring.WithArgs([]string{"-pint", "KEY"}), // Set program arguments.
         ring.WithClock(clock), // Inject clock.
+        ring.WithFS(os.DirFS("testdata/fs")), // Inject test filesystem.
     )
 
     // --- When ---

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/must"
 )
 
 func Test_WithEnv(t *testing.T) {
@@ -66,6 +67,20 @@ func Test_WithClock(t *testing.T) {
 	assert.Same(t, time.Now, rng.clock)
 }
 
+func Test_WithFS(t *testing.T) {
+	// --- Given ---
+	rng := &Ring{}
+	root := must.Value(os.OpenRoot("ringtest"))
+	t.Cleanup(func() { _ = root.Close() })
+	FS := root.FS()
+
+	// --- When ---
+	WithFS(FS)(rng)
+
+	// --- Then ---
+	assert.Same(t, FS, rng.fs)
+}
+
 func Test_defaultRing(t *testing.T) {
 	// --- When ---
 	have := defaultRing()
@@ -76,10 +91,11 @@ func Test_defaultRing(t *testing.T) {
 	assert.Same(t, os.Stdout, have.stdout)
 	assert.Same(t, os.Stderr, have.stderr)
 	assert.Same(t, NowUTC, have.clock)
+	assert.Nil(t, have.fs)
 	assert.Equal(t, os.Args[0], have.name)
 	assert.Equal(t, os.Args[1:], have.args)
 	assert.Nil(t, have.meta)
-	assert.Fields(t, 6, Ring{})
+	assert.Fields(t, 7, Ring{})
 }
 
 func Test_New(t *testing.T) {
@@ -93,11 +109,12 @@ func Test_New(t *testing.T) {
 		assert.Same(t, os.Stdout, have.stdout)
 		assert.Same(t, os.Stderr, have.stderr)
 		assert.Same(t, NowUTC, have.clock)
+		assert.Nil(t, have.fs)
 		assert.Equal(t, os.Args[0], have.name)
 		assert.Equal(t, os.Args[1:], have.args)
 		assert.NotNil(t, have.meta)
 		assert.Empty(t, have.meta)
-		assert.Fields(t, 6, Ring{})
+		assert.Fields(t, 7, Ring{})
 	})
 
 	t.Run("with option", func(t *testing.T) {
@@ -270,10 +287,37 @@ func Test_Ring_MetaAll(t *testing.T) {
 	assert.Same(t, rng.meta, have)
 }
 
+func Test_Ring_FS(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{fs: os.DirFS("ringtest")}
+
+		// --- When ---
+		have, err := rng.FS()
+
+		// --- Then ---
+		assert.NoError(t, err)
+		assert.Equal(t, rng.fs, have)
+	})
+
+	t.Run("error - no filesystem access", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{}
+
+		// --- When ---
+		have, err := rng.FS()
+
+		// --- Then ---
+		assert.ErrorIs(t, ErrNoFsAccess, err)
+		assert.Nil(t, have)
+	})
+}
+
 func Test_Ring_Clone(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
-		rng := New()
+		rngFS := os.DirFS("ringtest")
+		rng := New(WithFS(rngFS))
 
 		// --- When ---
 		have := rng.Clone()
@@ -284,7 +328,9 @@ func Test_Ring_Clone(t *testing.T) {
 		assert.NotSame(t, rng.hidIO, have.hidIO)
 		assert.Same(t, rng.clock, have.clock)
 		assert.Equal(t, rng.name, have.name)
+		assert.Equal(t, rngFS, have.fs)
 		assert.NotSame(t, rng.args, have.args)
 		assert.Same(t, rng.meta, have.meta)
+		assert.Fields(t, 7, Ring{})
 	})
 }

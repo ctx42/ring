@@ -5,6 +5,7 @@ package ring
 
 import (
 	"errors"
+	"io/fs"
 	"os"
 	"slices"
 	"time"
@@ -18,6 +19,9 @@ var (
 	// ErrInvMeta indicates a metadata key is invalid due to an incorrect type,
 	// format, or value.
 	ErrInvMeta = errors.New("invalid ring metadata key")
+
+	// ErrNoFsAccess is returned when [Ring] has no filesystem access.
+	ErrNoFsAccess = errors.New("no filesystem access")
 )
 
 // Clock defines a function signature that returns the current time in UTC.
@@ -52,6 +56,11 @@ func WithMeta(meta map[string]any) Option {
 	return func(rng *Ring) { rng.meta = meta }
 }
 
+// WithFS configures a [Ring] with access to read-only filesystem.
+func WithFS(filesystem fs.FS) Option {
+	return func(rng *Ring) { rng.fs = filesystem }
+}
+
 // Hide embedded fields.
 type (
 	hidEnv = Env
@@ -66,6 +75,7 @@ type Ring struct {
 	*hidEnv                // Program environment.
 	*hidIO                 // Standard I/O streams.
 	clock   Clock          // Function returning current time in UTC.
+	fs      fs.FS          // Program filesystem.
 	name    string         // Program name.
 	args    []string       // Program arguments (excluding program name).
 	meta    map[string]any // Arbitrary metadata.
@@ -80,6 +90,7 @@ type Ring struct {
 //   - Args: os.Args[1:] (excludes program name)
 //   - Environment: nil
 //   - Metadata: nil
+//   - Filesystem: nil
 func defaultRing() *Ring {
 	return &Ring{
 		hidIO: NewIO(),
@@ -98,6 +109,7 @@ func defaultRing() *Ring {
 //   - Args: os.Args[1:]
 //   - Name: os.Args[0]
 //   - Metadata: empty map
+//   - Filesystem: no access.
 //
 // Example:
 //
@@ -164,6 +176,14 @@ func (rng *Ring) MetaDelete(key string) {
 // MetaAll returns metadata map.
 func (rng *Ring) MetaAll() map[string]any { return rng.meta }
 
+// FS returns a hierarchical file system associated with the instance.
+func (rng *Ring) FS() (fs.FS, error) {
+	if rng.fs == nil {
+		return nil, ErrNoFsAccess
+	}
+	return rng.fs, nil
+}
+
 // Clone creates a deep copy of the [Ring] instance (except metadata structure).
 //
 // Changes to metadata will be visible in all clones.
@@ -172,6 +192,7 @@ func (rng *Ring) Clone() *Ring {
 		hidEnv: rng.hidEnv.EnvClone(),
 		hidIO:  rng.hidIO.IOClone(),
 		clock:  rng.clock,
+		fs:     rng.fs,
 		name:   rng.name,
 		args:   slices.Clone(rng.args),
 		meta:   rng.meta,
