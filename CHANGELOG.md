@@ -1,3 +1,6 @@
+## v0.6.1 (Sat, 09 May 2026 19:56:20 UTC)
+- chore: update github.com/ctx42/testing to v0.48.0.
+
 ## v0.6.0 (Fri, 01 May 2026 20:08:11 UTC)
 - chore: Update to Go 1.26 and update dependencies.
 
