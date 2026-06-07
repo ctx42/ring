@@ -9,6 +9,9 @@
 * [Usage](#usage)
   * [Production Code](#production-code)
   * [Test Code](#test-code)
+  * [Metadata](#metadata)
+  * [Subcommand Context](#subcommand-context)
+  * [Deterministic Time](#deterministic-time)
 <!-- TOC -->
 
 # The `ring` Package
@@ -101,4 +104,55 @@ greet(rng)
 fmt.Print(sout.String())
 // Output:
 // Hello, Alice!
+```
+
+## Metadata
+
+`Ring` carries an arbitrary `map[string]any` that subcommand handlers
+can read and write without extra function parameters:
+
+<!-- gmdoceg:ExampleRing_MetaSet -->
+```go
+rng := ring.New()
+rng.MetaSet("trace-id", "abc-123")
+
+fmt.Println(rng.MetaGet("trace-id"))
+// Output:
+// abc-123
+```
+
+## Subcommand Context
+
+`Clone` produces an independent `Ring` with its own I/O and environment.
+The metadata map is shared intentionally — a parent command can set a
+trace ID or loaded config once and every clone sees it:
+
+<!-- gmdoceg:ExampleRing_Clone -->
+```go
+parent := ring.New()
+parent.MetaSet("trace-id", "xyz-789")
+
+child := parent.Clone()
+child.SetArgs([]string{"--verbose"})
+
+fmt.Println(child.Args())
+fmt.Println(child.MetaGet("trace-id"))
+// Output:
+// [--verbose]
+// xyz-789
+```
+
+## Deterministic Time
+
+Inject a fixed clock to make time-dependent code produce stable output
+in tests:
+
+<!-- gmdoceg:ExampleWithClock -->
+```go
+fixed := time.Date(2024, 1, 15, 12, 0, 0, 0, time.UTC)
+rng := ring.New(ring.WithClock(func() time.Time { return fixed }))
+
+fmt.Println(rng.Clock()().Format(time.DateOnly))
+// Output:
+// 2024-01-15
 ```
