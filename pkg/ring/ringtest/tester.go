@@ -7,8 +7,8 @@ import (
 	"bytes"
 	"maps"
 
-	"github.com/ctx42/testing/pkg/kit/iokit"
 	"github.com/ctx42/testing/pkg/tester"
+	"github.com/ctx42/testkit/pkg/iokit"
 
 	"github.com/ctx42/ring/pkg/ring"
 )
@@ -103,6 +103,11 @@ func (tst *Tester) WetStderr() *Tester {
 // ResetStderr resets the standard error buffer removing all written data.
 func (tst *Tester) ResetStderr() { tst.eout.Reset() }
 
-func (tst *Tester) Stdin() string  { return tst.sin.String() }
+// Stdin returns the current content of the stdin buffer.
+func (tst *Tester) Stdin() string { return tst.sin.String() }
+
+// Stdout returns the current content of the stdout buffer.
 func (tst *Tester) Stdout() string { return tst.sout.String() }
+
+// Stderr returns the current content of the stderr buffer.
 func (tst *Tester) Stderr() string { return tst.eout.String() }

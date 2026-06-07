@@ -134,7 +134,8 @@ func New(opts ...Option) *Ring {
 // Clock returns function returning current time in UTC.
 func (rng *Ring) Clock() func() time.Time { return rng.clock }
 
-// Args returns the program arguments, excluding the program name.
+// Args returns the program arguments, excluding the program name. The
+// returned slice is not a copy; callers must not modify it.
 func (rng *Ring) Args() []string { return rng.args }
 
 // SetArgs sets the program arguments, excluding the program name.
@@ -173,7 +174,8 @@ func (rng *Ring) MetaDelete(key string) {
 	delete(rng.meta, key)
 }
 
-// MetaAll returns metadata map.
+// MetaAll returns the live metadata map. The map is shared across all
+// [Ring.Clone] copies; mutations are visible to every clone.
 func (rng *Ring) MetaAll() map[string]any { return rng.meta }
 
 // FS returns a hierarchical file system associated with the instance.

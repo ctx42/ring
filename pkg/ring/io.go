@@ -35,22 +35,19 @@ func NewIO() *IO {
 	}
 }
 
-// Stdin returns the standard input to use for a program.
 func (ios *IO) Stdin() io.Reader { return ios.stdin }
 
-// Stdout returns the standard output to use for a program.
 func (ios *IO) Stdout() io.Writer { return ios.stdout }
 
-// Stderr returns the standard error to use for a program.
 func (ios *IO) Stderr() io.Writer { return ios.stderr }
 
-// SetStdin returns [IO] with the given standard input.
+// SetStdin sets the standard input stream.
 func (ios *IO) SetStdin(sin io.Reader) { ios.stdin = sin }
 
-// SetStdout returns [IO] with the given standard output.
+// SetStdout sets the standard output stream.
 func (ios *IO) SetStdout(sout io.Writer) { ios.stdout = sout }
 
-// SetStderr returns [IO] with the given standard error.
+// SetStderr sets the standard error stream.
 func (ios *IO) SetStderr(eout io.Writer) { ios.stderr = eout }
 
 // IOClone creates a copy of the current [IO] instance with identical streams.

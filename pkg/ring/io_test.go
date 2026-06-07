@@ -92,7 +92,7 @@ func Test_IO_IOClone(t *testing.T) {
 	// --- When ---
 	have := ios.IOClone()
 
-	// --- Ten ---
+	// --- Then ---
 	assert.NotSame(t, ios, have)
 	assert.Same(t, ios.stdin, have.stdin)
 	assert.Same(t, ios.stdout, have.stdout)

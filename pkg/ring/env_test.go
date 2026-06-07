@@ -289,6 +289,19 @@ func Test_EnvSet(t *testing.T) {
 		// --- Then ---
 		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, Sort(have))
 	})
+
+	t.Run("no caller mutation", func(t *testing.T) {
+		// --- Given ---
+		orig := []string{"A=1", "B=2", "C=3"}
+		snap := slices.Clone(orig)
+
+		// --- When ---
+		have := EnvSet(orig, "B", "4")
+
+		// --- Then ---
+		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, have)
+		assert.Equal(t, snap, orig)
+	})
 }
 
 func Test_EnvUnset_tabular(t *testing.T) {
@@ -304,6 +317,21 @@ func Test_EnvUnset_tabular(t *testing.T) {
 			assert.Equal(t, tc.wantEnv, Sort(have))
 		})
 	}
+}
+
+func Test_EnvUnset(t *testing.T) {
+	t.Run("no caller mutation", func(t *testing.T) {
+		// --- Given ---
+		orig := []string{"A=1", "B=2", "C=3"}
+		snap := slices.Clone(orig)
+
+		// --- When ---
+		have := EnvUnset(orig, "B")
+
+		// --- Then ---
+		assert.Equal(t, []string{"A=1", "C=3"}, have)
+		assert.Equal(t, snap, orig)
+	})
 }
 
 func Test_EnvLookup_tabular(t *testing.T) {
@@ -350,7 +378,7 @@ func Test_EnvGetDefault_tabular(t *testing.T) {
 			// --- When ---
 			have := EnvGetDefault(tc.env, tc.key, tc.def)
 
-			// --- Ten ---
+			// --- Then ---
 			assert.Equal(t, tc.want, have)
 		})
 	}
