@@ -1,3 +1,10 @@
+## v0.7.0 (Sun, 07 Jun 2026 20:51:02 UTC)
+- fix: correct godoc and EnvSet/EnvUnset slice aliasing.
+- chore: update deps, tooling config.
+- test: sort EnvSet/EnvUnset results before comparing.
+- docs: add testable example and fix README code blocks.
+- docs: add examples for metadata, clone, and clock injection.
+
 ## v0.6.1 (Sat, 09 May 2026 19:56:20 UTC)
 - chore: update github.com/ctx42/testing to v0.48.0.
 
