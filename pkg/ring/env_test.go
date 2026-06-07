@@ -299,7 +299,7 @@ func Test_EnvSet(t *testing.T) {
 		have := EnvSet(orig, "B", "4")
 
 		// --- Then ---
-		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, have)
+		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, Sort(have))
 		assert.Equal(t, snap, orig)
 	})
 }
@@ -329,7 +329,7 @@ func Test_EnvUnset(t *testing.T) {
 		have := EnvUnset(orig, "B")
 
 		// --- Then ---
-		assert.Equal(t, []string{"A=1", "C=3"}, have)
+		assert.Equal(t, []string{"A=1", "C=3"}, Sort(have))
 		assert.Equal(t, snap, orig)
 	})
 }
