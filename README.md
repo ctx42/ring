@@ -51,7 +51,7 @@ import (
     "context"
     "os"
 
-    "github.com/ctx42/ring"
+    "github.com/ctx42/ring/pkg/ring"
 
     "github.com/user/project/cmd"
 )
@@ -78,38 +78,27 @@ This way the `cmd.Main` becomes really easy to test.
 
 ## Test Code
 
-Use [StdIO] to manage standard I/O streams, ideal for testing:
+Use a buffer for stdout to capture and verify program output without
+touching `os.Stdout`:
 
+<!-- gmdoceg:ExampleNew_inTest -->
 ```go
-package cmd
-
-import (
-    "bytes"
-    "testing"
-    "time"
-
-    "github.com/ctx42/ring"
-    "github.com/ctx42/testing/pkg/assert"
-    "github.com/ctx42/testing/pkg/iokit"
-)
-
-func Test_ProgramOutput(t *testing.T) {
-    // --- Given ---
-    var sout bytes.Buffer // Create a buffer to capture output.
-    clock := iokit.ClockFixed(time.Date(2000, 1, 2, 3, 4, 5, 6, nil))
-    rng := ring.New(
-        ring.SetStdout(&sout), // Set custom standard output.
-        ring.WithEnv([]string{"KEY=value"}), // Inject environment.
-        ring.WithArgs([]string{"-pint", "KEY"}), // Set program arguments.
-        ring.WithClock(clock), // Inject clock.
-        ring.WithFS(os.DirFS("testdata/fs")), // Inject test filesystem.
-    )
-
-    // --- When ---
-    have := Main(t.Context(), rng) // Run a program.
-
-    // --- Then ---
-    assert.Equal(t, 0, have)                // Test exit code.
-    assert.Equal(t, "value", sout.String()) // Test standard output.
+// greet simulates a CLI function that writes to the ring's stdout.
+greet := func(rng *ring.Ring) {
+    name := rng.EnvGet("USER_NAME")
+    fmt.Fprintf(rng.Stdout(), "Hello, %s!\n", name)
 }
+
+var sout bytes.Buffer
+rng := ring.New(
+    ring.WithEnv([]string{"USER_NAME=Alice"}),
+    ring.WithArgs([]string{"--verbose"}),
+)
+rng.SetStdout(&sout)
+
+greet(rng)
+
+fmt.Print(sout.String())
+// Output:
+// Hello, Alice!
 ```
