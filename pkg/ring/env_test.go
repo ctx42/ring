@@ -411,6 +411,7 @@ func Test_EnvSplit_tabular(t *testing.T) {
 		})
 	}
 }
+
 func Test_EnvOrOs(t *testing.T) {
 	t.Run("return env", func(t *testing.T) {
 		// --- Given ---
