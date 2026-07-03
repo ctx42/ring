@@ -1,3 +1,6 @@
+## v0.7.1 (Fri, 03 Jul 2026 15:31:28 UTC)
+- chore: update dependencies.
+
 ## v0.7.0 (Sun, 07 Jun 2026 20:51:02 UTC)
 - fix: correct godoc and EnvSet/EnvUnset slice aliasing.
 - chore: update deps, tooling config.
