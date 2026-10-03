@@ -22,25 +22,25 @@ func Test_New(t *testing.T) {
 		tspy.Close()
 
 		// --- When ---
-		tst := New(tspy)
+		have := New(tspy)
 
 		// --- Then ---
 
 		// The instance of [ring.Ring].
-		assert.Equal(t, Sort(os.Environ()), Sort(tst.rng.EnvAll()))
-		assert.NotNil(t, tst.rng.MetaAll())
-		assert.Empty(t, tst.rng.MetaAll())
-		assert.Same(t, os.Stdin, tst.rng.Stdin())
-		assert.Same(t, os.Stdout, tst.rng.Stdout())
-		assert.Same(t, os.Stderr, tst.rng.Stderr())
-		assert.Same(t, ring.NowUTC, tst.rng.Clock())
-		assert.Equal(t, os.Args[0], tst.rng.Name())
-		assert.Empty(t, tst.rng.Args())
+		assert.Equal(t, Sort(os.Environ()), Sort(have.rng.EnvAll()))
+		assert.NotNil(t, have.rng.MetaAll())
+		assert.Empty(t, have.rng.MetaAll())
+		assert.Same(t, os.Stdin, have.rng.Stdin())
+		assert.Same(t, os.Stdout, have.rng.Stdout())
+		assert.Same(t, os.Stderr, have.rng.Stderr())
+		assert.Same(t, ring.NowUTC, have.rng.Clock())
+		assert.Equal(t, os.Args[0], have.rng.Name())
+		assert.Empty(t, have.rng.Args())
 		// The instance of [tester.Tester].
-		assert.Empty(t, tst.sin.String())
-		assert.Equal(t, "", tst.sout.String())
-		assert.Equal(t, "", tst.eout.String())
-		assert.Same(t, tspy, tst.t)
+		assert.Empty(t, have.sin.String())
+		assert.Equal(t, "", have.sout.String())
+		assert.Equal(t, "", have.eout.String())
+		assert.Same(t, tspy, have.t)
 	})
 
 	t.Run("with environment", func(t *testing.T) {
@@ -52,10 +52,10 @@ func Test_New(t *testing.T) {
 		env := []string{"A=B", "C=D"}
 
 		// --- When ---
-		tst := New(tspy, ring.WithEnv(env))
+		have := New(tspy, ring.WithEnv(env))
 
 		// --- Then ---
-		assert.Equal(t, env, Sort(tst.Ring().EnvAll()))
+		assert.Equal(t, env, Sort(have.Ring().EnvAll()))
 	})
 
 	t.Run("error - stdout written", func(t *testing.T) {
@@ -111,18 +111,18 @@ func Test_Tester_Ring(t *testing.T) {
 		tst := New(tspy)
 
 		// --- When ---
-		rng := tst.Ring()
+		have := tst.Ring()
 
 		// --- Then ---
-		assert.Equal(t, Sort(os.Environ()), Sort(rng.EnvAll()))
-		assert.NotNil(t, rng.MetaAll())
-		assert.Empty(t, rng.MetaAll())
-		assert.Same(t, tst.sin, rng.Stdin())
-		assert.Same(t, tst.sout, rng.Stdout())
-		assert.Same(t, tst.eout, rng.Stderr())
-		assert.Same(t, ring.NowUTC, rng.Clock())
-		assert.Equal(t, os.Args[0], rng.Name())
-		assert.Empty(t, rng.Args())
+		assert.Equal(t, Sort(os.Environ()), Sort(have.EnvAll()))
+		assert.NotNil(t, have.MetaAll())
+		assert.Empty(t, have.MetaAll())
+		assert.Same(t, tst.sin, have.Stdin())
+		assert.Same(t, tst.sout, have.Stdout())
+		assert.Same(t, tst.eout, have.Stderr())
+		assert.Same(t, ring.NowUTC, have.Clock())
+		assert.Equal(t, os.Args[0], have.Name())
+		assert.Empty(t, have.Args())
 	})
 
 	t.Run("with args", func(t *testing.T) {
@@ -134,18 +134,18 @@ func Test_Tester_Ring(t *testing.T) {
 		tst := New(tspy)
 
 		// --- When ---
-		rng := tst.Ring("a", "b", "c")
+		have := tst.Ring("a", "b", "c")
 
 		// --- Then ---
-		assert.Equal(t, Sort(os.Environ()), Sort(rng.EnvAll()))
-		assert.NotNil(t, rng.MetaAll())
-		assert.Empty(t, rng.MetaAll())
-		assert.Same(t, tst.sin, rng.Stdin())
-		assert.Same(t, tst.sout, rng.Stdout())
-		assert.Same(t, tst.eout, rng.Stderr())
-		assert.Same(t, ring.NowUTC, rng.Clock())
-		assert.Equal(t, os.Args[0], rng.Name())
-		assert.Equal(t, []string{"a", "b", "c"}, rng.Args())
+		assert.Equal(t, Sort(os.Environ()), Sort(have.EnvAll()))
+		assert.NotNil(t, have.MetaAll())
+		assert.Empty(t, have.MetaAll())
+		assert.Same(t, tst.sin, have.Stdin())
+		assert.Same(t, tst.sout, have.Stdout())
+		assert.Same(t, tst.eout, have.Stderr())
+		assert.Same(t, ring.NowUTC, have.Clock())
+		assert.Equal(t, os.Args[0], have.Name())
+		assert.Equal(t, []string{"a", "b", "c"}, have.Args())
 	})
 
 	t.Run("with a custom name", func(t *testing.T) {
@@ -157,10 +157,10 @@ func Test_Tester_Ring(t *testing.T) {
 		tst := New(tspy, ring.WithName("my"))
 
 		// --- When ---
-		rng := tst.Ring()
+		have := tst.Ring()
 
 		// --- Then ---
-		assert.Equal(t, "my", rng.Name())
+		assert.Equal(t, "my", have.Name())
 	})
 
 	t.Run("with clone of metadata", func(t *testing.T) {
@@ -173,10 +173,10 @@ func Test_Tester_Ring(t *testing.T) {
 		tst := New(tspy, ring.WithMeta(m))
 
 		// --- When ---
-		rng := tst.Ring()
+		have := tst.Ring()
 
 		// --- Then ---
-		assert.NotSame(t, m, rng.MetaAll())
+		assert.NotSame(t, m, have.MetaAll())
 	})
 
 	t.Run("with filesystem", func(t *testing.T) {
@@ -208,12 +208,12 @@ func Test_Tester_Streams(t *testing.T) {
 	tst := New(tspy)
 
 	// --- When ---
-	ios := tst.Streams()
+	have := tst.Streams()
 
 	// --- Then ---
-	assert.Same(t, tst.sin, ios.Stdin())
-	assert.Same(t, tst.sout, ios.Stdout())
-	assert.Same(t, tst.eout, ios.Stderr())
+	assert.Same(t, tst.sin, have.Stdin())
+	assert.Same(t, tst.sout, have.Stdout())
+	assert.Same(t, tst.eout, have.Stderr())
 }
 
 func Test_Tester_SetStdin(t *testing.T) {
