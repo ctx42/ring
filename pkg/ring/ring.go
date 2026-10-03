@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 // Package ring provides a program execution context that bundles standard
-// I/O, environment variables, arguments, a clock, and metadata.
+// I/O, environment variables, arguments, a clock, a filesystem, and
+// metadata.
 //
 // Import it as "github.com/ctx42/ring/pkg/ring".
 package ring
@@ -78,7 +79,8 @@ var _ Streamer = Ring{} // Compile time check.
 var _ Environ = Ring{}  // Compile time check.
 
 // Ring represents a program execution context, encapsulating standard I/O
-// streams, environment variables, arguments, a clock, and metadata.
+// streams, environment variables, arguments, a clock, a filesystem, and
+// metadata.
 //
 // Do not use the zero value. Its promoted environment and stream methods
 // panic, and [Ring.Clock] is nil. Build rings with [New]. [Ring.Clone] of a
