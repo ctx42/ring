@@ -10,9 +10,14 @@ import (
 
 // Streamer defines an interface for accessing a program's standard I/O streams.
 type Streamer interface {
-	Stdin() io.Reader  // Standard input.
-	Stdout() io.Writer // Standard output.
-	Stderr() io.Writer // Standard error.
+	// Stdin returns the standard input.
+	Stdin() io.Reader
+
+	// Stdout returns the standard output.
+	Stdout() io.Writer
+
+	// Stderr returns the standard error.
+	Stderr() io.Writer
 }
 
 var _ Streamer = &IO{} // Compile time check.
