@@ -25,24 +25,33 @@ func Test_IO_Stdin(t *testing.T) {
 	// --- Given ---
 	ios := IO{stdin: &bytes.Buffer{}}
 
+	// --- When ---
+	have := ios.Stdin()
+
 	// --- Then ---
-	assert.Same(t, ios.stdin, ios.Stdin())
+	assert.Same(t, ios.stdin, have)
 }
 
 func Test_IO_Stdout(t *testing.T) {
 	// --- Given ---
 	ios := IO{stdout: &bytes.Buffer{}}
 
+	// --- When ---
+	have := ios.Stdout()
+
 	// --- Then ---
-	assert.Same(t, ios.stdout, ios.Stdout())
+	assert.Same(t, ios.stdout, have)
 }
 
 func Test_IO_Stderr(t *testing.T) {
 	// --- Given ---
 	ios := IO{stderr: &bytes.Buffer{}}
 
+	// --- When ---
+	have := ios.Stderr()
+
 	// --- Then ---
-	assert.Same(t, ios.stderr, ios.Stderr())
+	assert.Same(t, ios.stderr, have)
 }
 
 func Test_IO_SetStdin(t *testing.T) {
