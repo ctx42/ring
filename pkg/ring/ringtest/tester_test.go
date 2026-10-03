@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/ctx42/testing/pkg/assert"
+	"github.com/ctx42/testing/pkg/must"
 	"github.com/ctx42/testing/pkg/tester"
 
 	"github.com/ctx42/ring/pkg/ring"
@@ -203,8 +204,7 @@ func Test_Tester_Ring(t *testing.T) {
 		have := tst.Ring()
 
 		// --- Then ---
-		filesystem, err := have.FS()
-		assert.NoError(t, err)
+		filesystem := must.Value(have.FS())
 		assert.Equal(t, root, filesystem)
 	})
 }
