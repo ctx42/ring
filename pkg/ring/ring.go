@@ -69,14 +69,17 @@ func WithFS(filesystem fs.FS) Option {
 	return func(rng *Ring) { rng.fs = filesystem }
 }
 
-// Hide embedded fields.
+// Unexported aliases hide the embedded field names.
 type (
 	hidEnv = Env
 	hidIO  = IO
 )
 
-var _ Streamer = Ring{} // Compile time check.
-var _ Environ = Ring{}  // Compile time check.
+// Ring implements Streamer.
+var _ Streamer = Ring{}
+
+// Ring implements Environ.
+var _ Environ = Ring{}
 
 // Ring represents a program execution context, encapsulating standard I/O
 // streams, environment variables, arguments, a clock, a filesystem, and
@@ -86,13 +89,13 @@ var _ Environ = Ring{}  // Compile time check.
 // panic, and [Ring.Clock] is nil. Build rings with [New]. [Ring.Clone] of a
 // zero ring keeps the nil environment and the nil streams.
 type Ring struct {
-	*hidEnv                // Program environment.
-	*hidIO                 // Standard I/O streams.
-	clock   Clock          // Function returning current time in UTC.
-	fs      fs.FS          // Program filesystem.
-	name    string         // Program name.
-	args    []string       // Program arguments (excluding program name).
-	meta    map[string]any // Arbitrary metadata.
+	*hidEnv                // This is the program environment.
+	*hidIO                 // These are the standard I/O streams.
+	clock   Clock          // This returns the current time in UTC.
+	fs      fs.FS          // This is the program filesystem.
+	name    string         // This is the program name.
+	args    []string       // These are the arguments, excluding the name.
+	meta    map[string]any // This is arbitrary metadata.
 }
 
 // defaultRing returns a new [Ring] with default configuration.
