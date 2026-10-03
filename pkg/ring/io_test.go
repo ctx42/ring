@@ -57,6 +57,7 @@ func Test_IO_Stderr(t *testing.T) {
 func Test_IO_SetStdin(t *testing.T) {
 	// --- Given ---
 	ios := IO{stdin: &bytes.Buffer{}}
+
 	other := &bytes.Buffer{}
 
 	// --- When ---
@@ -69,6 +70,7 @@ func Test_IO_SetStdin(t *testing.T) {
 func Test_IO_SetStdout(t *testing.T) {
 	// --- Given ---
 	ios := IO{stdout: &bytes.Buffer{}}
+
 	other := &bytes.Buffer{}
 
 	// --- When ---
@@ -81,6 +83,7 @@ func Test_IO_SetStdout(t *testing.T) {
 func Test_IO_SetStderr(t *testing.T) {
 	// --- Given ---
 	ios := IO{stderr: &bytes.Buffer{}}
+
 	other := &bytes.Buffer{}
 
 	// --- When ---
@@ -106,5 +109,6 @@ func Test_IO_IOClone(t *testing.T) {
 	assert.Same(t, ios.stdin, have.stdin)
 	assert.Same(t, ios.stdout, have.stdout)
 	assert.Same(t, ios.stderr, have.stderr)
+
 	assert.Fields(t, 3, IO{})
 }
