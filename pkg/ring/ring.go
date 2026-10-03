@@ -125,6 +125,9 @@ func defaultRing() *Ring {
 func New(opts ...Option) *Ring {
 	rng := defaultRing()
 	for _, opt := range opts {
+		if opt == nil {
+			continue
+		}
 		opt(rng)
 	}
 	if rng.hidEnv == nil {

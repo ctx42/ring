@@ -127,6 +127,21 @@ func Test_New(t *testing.T) {
 		// --- Then ---
 		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, rng.env)
 	})
+
+	t.Run("nil option", func(t *testing.T) {
+		// --- Given ---
+		name := "app"
+
+		opt := WithName(name)
+
+		opts := []Option{nil, opt}
+
+		// --- When ---
+		have := New(opts...)
+
+		// --- Then ---
+		assert.Equal(t, name, have.Name())
+	})
 }
 
 func Test_Ring_Clock(t *testing.T) {
