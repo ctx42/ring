@@ -119,14 +119,15 @@ func EnvGetDefault(env []string, key, def string) string {
 	return def
 }
 
-// EnvSet sets a single environment variable. Returns the modified slice.
+// EnvSet sets one variable. It returns a new slice and leaves env unchanged.
 func EnvSet(env []string, key, val string) []string {
 	m := NewEnv(env)
 	m.EnvSet(key, val)
 	return m.EnvAll()
 }
 
-// EnvUnset unsets a single environment variable. Returns the modified slice.
+// EnvUnset removes one variable. It returns a new slice and leaves env
+// unchanged.
 func EnvUnset(env []string, key string) []string {
 	m := NewEnv(env)
 	m.EnvUnset(key)
