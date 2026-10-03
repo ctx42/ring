@@ -73,6 +73,7 @@ type (
 )
 
 var _ Streamer = Ring{} // Compile time check.
+var _ Environ = Ring{}  // Compile time check.
 
 // Ring represents a program execution context, encapsulating standard I/O
 // streams, environment variables, arguments, a clock, and metadata.
