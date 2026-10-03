@@ -123,9 +123,10 @@ fmt.Println(rng.MetaGet("trace-id"))
 
 ## Subcommand Context
 
-`Clone` produces an independent `Ring` with its own I/O and environment.
-The metadata map is shared intentionally — a parent command can set a
-trace ID or loaded config once and every clone sees it:
+`Clone` produces a subcommand context with its own environment and
+argument slice. The metadata map, the filesystem, and the standard
+streams are shared — a parent command can set a trace ID once and
+every clone sees it:
 
 <!-- gmdoceg:ExampleRing_Clone -->
 ```go

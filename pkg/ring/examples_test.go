@@ -57,10 +57,9 @@ func ExampleRing_MetaSet() {
 	// abc-123
 }
 
-// ExampleRing_Clone shows how to create an independent subcommand context
-// from a parent Ring. The clone gets its own I/O and environment, but
-// shares the parent's metadata map — changes on either side are visible
-// to both.
+// ExampleRing_Clone shows how to create a subcommand context from a
+// parent Ring. The clone has its own environment and argument slice.
+// Metadata, the filesystem, and the standard streams are shared.
 func ExampleRing_Clone() {
 	parent := ring.New()
 	parent.MetaSet("trace-id", "xyz-789")

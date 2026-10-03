@@ -191,9 +191,10 @@ func (rng *Ring) FS() (fs.FS, error) {
 	return rng.fs, nil
 }
 
-// Clone creates a deep copy of the [Ring] instance (except metadata structure).
-//
-// Changes to metadata will be visible in all clones.
+// Clone copies the [Ring]. The copy has its own environment map and its
+// own argument slice. Metadata, the filesystem, and the standard streams
+// are shared, so a metadata change or a write to a stream is visible on
+// every clone.
 func (rng *Ring) Clone() *Ring {
 	return &Ring{
 		hidEnv: rng.hidEnv.EnvClone(),
