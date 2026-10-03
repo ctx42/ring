@@ -23,7 +23,7 @@ func Test_WithEnv(t *testing.T) {
 	WithEnv(env)(rng)
 
 	// --- Then ---
-	assert.Equal(t, map[string]string{"A": "1", "B": "2"}, rng.hidEnv.env)
+	assert.Equal(t, map[string]string{"A": "1", "B": "2"}, rng.env)
 
 	t.Run("nil slice", func(t *testing.T) {
 		// --- Given ---
@@ -36,8 +36,8 @@ func Test_WithEnv(t *testing.T) {
 
 		// --- Then ---
 		assert.NotNil(t, rng.hidEnv)
-		assert.NotNil(t, rng.hidEnv.env)
-		assert.Empty(t, rng.hidEnv.env)
+		assert.NotNil(t, rng.env)
+		assert.Empty(t, rng.env)
 	})
 }
 
@@ -446,8 +446,8 @@ func Test_Ring_Clone(t *testing.T) {
 		// --- Then ---
 		assert.NotSame(t, rng, have)
 		assert.NotSame(t, rng.hidEnv, have.hidEnv)
-		assert.Equal(t, rng.hidEnv.env, have.hidEnv.env)
-		assert.NotSame(t, rng.hidEnv.env, have.hidEnv.env)
+		assert.Equal(t, rng.env, have.env)
+		assert.NotSame(t, rng.env, have.env)
 		assert.NotSame(t, rng.hidIO, have.hidIO)
 		assert.Same(t, rng.Stdin(), have.Stdin())
 		assert.Same(t, rng.Stdout(), have.Stdout())

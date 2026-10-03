@@ -226,11 +226,11 @@ func (rng *Ring) FS() (fs.FS, error) {
 func (rng *Ring) Clone() *Ring {
 	var env *Env
 	if rng.hidEnv != nil {
-		env = rng.hidEnv.EnvClone()
+		env = rng.EnvClone()
 	}
 	var ios *IO
 	if rng.hidIO != nil {
-		ios = rng.hidIO.IOClone()
+		ios = rng.IOClone()
 	}
 	return &Ring{
 		hidEnv: env,

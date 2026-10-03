@@ -59,7 +59,7 @@ func (env *Env) EnvLookup(key string) (string, bool) {
 }
 
 func (env *Env) EnvGet(key string) string {
-	val, _ := env.env[key]
+	val := env.env[key]
 	return val
 }
 
