@@ -63,7 +63,7 @@ var envUnsetTests = []struct {
 	deleteKey string
 	wantEnv   []string
 }{
-	{"empty", nil, "A", nil},
+	{"empty", nil, "A", []string{}},
 	{
 		"delete the first",
 		[]string{"A=1", "B=2", "C=3"},
@@ -264,7 +264,7 @@ func Test_Env_EnvAll(t *testing.T) {
 		have := env.EnvAll()
 
 		// --- Then ---
-		assert.Nil(t, have)
+		assert.NotNil(t, have)
 		assert.Len(t, 0, have)
 	})
 }

@@ -30,8 +30,8 @@ type Environ interface {
 	// EnvUnset unsets a single environment variable.
 	EnvUnset(key string)
 
-	// EnvAll returns environment as a slice of "key=value" entries. It
-	// returns nil when the environment is empty.
+	// EnvAll returns the environment as a slice of "key=value" entries.
+	// An empty environment is an empty slice.
 	EnvAll() []string
 }
 
@@ -80,9 +80,6 @@ func (env *Env) EnvSetWith(src []string) {
 func (env *Env) EnvUnset(key string) { delete(env.env, key) }
 
 func (env *Env) EnvAll() []string {
-	if len(env.env) == 0 {
-		return nil
-	}
 	ret := make([]string, 0, len(env.env))
 	for key, value := range env.env {
 		ret = append(ret, key+"="+value)
