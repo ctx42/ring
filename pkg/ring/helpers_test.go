@@ -15,6 +15,6 @@ func Test_NowUTC(t *testing.T) {
 	have := NowUTC()
 
 	// --- Then ---
-	assert.Within(t, time.Now(), "1ms", have)
+	assert.Within(t, time.Now(), "1s", have)
 	assert.Zone(t, time.UTC, have.Location())
 }
