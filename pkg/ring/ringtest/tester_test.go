@@ -247,7 +247,7 @@ func Test_Tester_SetStdin(t *testing.T) {
 }
 
 func Test_Tester_WetStdout(t *testing.T) {
-	t.Run("want stdout wet but is dry", func(t *testing.T) {
+	t.Run("error - stdout dry", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(3)
@@ -282,7 +282,7 @@ func Test_Tester_ResetStdout(t *testing.T) {
 }
 
 func Test_Tester_WetStderr(t *testing.T) {
-	t.Run("want stderr wet but is dry", func(t *testing.T) {
+	t.Run("error - stderr dry", func(t *testing.T) {
 		// --- Given ---
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(3)
