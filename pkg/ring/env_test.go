@@ -169,6 +169,21 @@ func Test_Env_EnvSet(t *testing.T) {
 		// --- Then ---
 		assert.Equal(t, map[string]string{"A": "2", "B": "2"}, env.env)
 	})
+
+	t.Run("nil map", func(t *testing.T) {
+		// --- Given ---
+		env := &Env{}
+
+		key := "A"
+
+		val := "1"
+
+		// --- When ---
+		env.EnvSet(key, val)
+
+		// --- Then ---
+		assert.Equal(t, map[string]string{"A": "1"}, env.env)
+	})
 }
 
 func Test_Env_EnvSetFrom(t *testing.T) {

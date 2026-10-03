@@ -60,7 +60,12 @@ func (env *Env) EnvGet(key string) string {
 	return val
 }
 
-func (env *Env) EnvSet(key, value string) { env.env[key] = value }
+func (env *Env) EnvSet(key, value string) {
+	if env.env == nil {
+		env.env = make(map[string]string)
+	}
+	env.env[key] = value
+}
 
 // EnvSetFrom sets multiple environment variables from the given map.
 // Overwrites existing variables with the same key.
