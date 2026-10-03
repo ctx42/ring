@@ -4,6 +4,7 @@
 package ring
 
 import (
+	"bytes"
 	"os"
 	"testing"
 	"time"
@@ -414,7 +415,14 @@ func Test_Ring_Clone(t *testing.T) {
 		// --- Given ---
 		rngFS := os.DirFS("ringtest")
 
+		sin := &bytes.Buffer{}
+		sout := &bytes.Buffer{}
+		eout := &bytes.Buffer{}
+
 		rng := New(WithFS(rngFS))
+		rng.SetStdin(sin)
+		rng.SetStdout(sout)
+		rng.SetStderr(eout)
 
 		// --- When ---
 		have := rng.Clone()
@@ -422,10 +430,16 @@ func Test_Ring_Clone(t *testing.T) {
 		// --- Then ---
 		assert.NotSame(t, rng, have)
 		assert.NotSame(t, rng.hidEnv, have.hidEnv)
+		assert.Equal(t, rng.hidEnv.env, have.hidEnv.env)
+		assert.NotSame(t, rng.hidEnv.env, have.hidEnv.env)
 		assert.NotSame(t, rng.hidIO, have.hidIO)
+		assert.Same(t, rng.Stdin(), have.Stdin())
+		assert.Same(t, rng.Stdout(), have.Stdout())
+		assert.Same(t, rng.Stderr(), have.Stderr())
 		assert.Same(t, rng.clock, have.clock)
 		assert.Equal(t, rng.name, have.name)
 		assert.Equal(t, rngFS, have.fs)
+		assert.Equal(t, rng.args, have.args)
 		assert.NotSame(t, rng.args, have.args)
 		assert.Same(t, rng.meta, have.meta)
 
