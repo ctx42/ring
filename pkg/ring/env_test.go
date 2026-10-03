@@ -262,8 +262,10 @@ func Test_Env_EnvClone(t *testing.T) {
 
 	// --- Then ---
 	assert.Equal(t, map[string]string{"A": "1"}, env.env)
+
 	assert.NotSame(t, env.env, have.env)
 	assert.NotSame(t, env, have)
+
 	assert.Fields(t, 1, Env{})
 }
 
@@ -293,6 +295,7 @@ func Test_EnvSet(t *testing.T) {
 	t.Run("no caller mutation", func(t *testing.T) {
 		// --- Given ---
 		orig := []string{"A=1", "B=2", "C=3"}
+
 		snap := slices.Clone(orig)
 
 		// --- When ---
@@ -300,6 +303,7 @@ func Test_EnvSet(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, Sort(have))
+
 		assert.Equal(t, snap, orig)
 	})
 }
@@ -308,6 +312,7 @@ func Test_EnvUnset(t *testing.T) {
 	t.Run("no caller mutation", func(t *testing.T) {
 		// --- Given ---
 		orig := []string{"A=1", "B=2", "C=3"}
+
 		snap := slices.Clone(orig)
 
 		// --- When ---
@@ -315,6 +320,7 @@ func Test_EnvUnset(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, []string{"A=1", "C=3"}, Sort(have))
+
 		assert.Equal(t, snap, orig)
 	})
 }
