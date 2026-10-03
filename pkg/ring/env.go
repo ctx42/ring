@@ -159,9 +159,13 @@ func EnvOrOs(env []string) []string {
 	return env
 }
 
-// SetFrom sets environment variables from src map. Always returns a new slice.
+// SetFrom sets environment variables from src. It returns a new slice. An
+// empty src clones env, and a nil env becomes an empty slice.
 func SetFrom(env []string, src map[string]string) []string {
 	if len(src) == 0 {
+		if env == nil {
+			return []string{}
+		}
 		return slices.Clone(env)
 	}
 	ret := NewEnv(env)

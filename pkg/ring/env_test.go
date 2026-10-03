@@ -516,4 +516,18 @@ func Test_SetFrom(t *testing.T) {
 		assert.Equal(t, []string{"A=1", "B=2"}, have)
 		assert.NotSame(t, env, have)
 	})
+
+	t.Run("nil env", func(t *testing.T) {
+		// --- Given ---
+		var env []string
+
+		var src map[string]string
+
+		// --- When ---
+		have := SetFrom(env, src)
+
+		// --- Then ---
+		assert.NotNil(t, have)
+		assert.Empty(t, have)
+	})
 }
