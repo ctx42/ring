@@ -37,6 +37,7 @@ func Test_New(t *testing.T) {
 		assert.Same(t, ring.NowUTC, have.rng.Clock())
 		assert.Equal(t, os.Args[0], have.rng.Name())
 		assert.Nil(t, have.rng.Args())
+
 		// The instance of [tester.Tester].
 		assert.Empty(t, have.sin.String())
 		assert.Equal(t, "", have.sout.String())
@@ -241,6 +242,7 @@ func Test_Tester_SetStdin(t *testing.T) {
 
 	// --- Then ---
 	assert.Same(t, tst, have)
+
 	assert.Same(t, buf, tst.sin)
 }
 
