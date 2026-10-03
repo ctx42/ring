@@ -13,12 +13,12 @@ import (
 
 func Test_NewIO(t *testing.T) {
 	// --- When ---
-	ios := NewIO()
+	have := NewIO()
 
 	// --- Then ---
-	assert.Same(t, os.Stdin, ios.Stdin())
-	assert.Same(t, os.Stdout, ios.Stdout())
-	assert.Same(t, os.Stderr, ios.Stderr())
+	assert.Same(t, os.Stdin, have.Stdin())
+	assert.Same(t, os.Stdout, have.Stdout())
+	assert.Same(t, os.Stderr, have.Stderr())
 }
 
 func Test_IO_Stdin(t *testing.T) {
