@@ -35,7 +35,9 @@ type Environ interface {
 	EnvAll() []string
 }
 
-// Env implements Environ.
+// Env implements Environ. The Env prefix on EnvLookup, EnvGet, EnvSet,
+// EnvUnset, EnvAll, and EnvClone is the Environ contract. EnvClone is not
+// named Clone because [Ring.Clone] already has that name.
 var _ Environ = &Env{}
 
 // Env implements [Environ], storing environment variables.
