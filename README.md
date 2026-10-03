@@ -1,35 +1,45 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ctx42/ring)](https://goreportcard.com/report/github.com/ctx42/ring)
-[![GoDoc](https://img.shields.io/badge/api-Godoc-blue.svg)](https://pkg.go.dev/github.com/ctx42/ring)
-![Tests](https://github.com/ctx42/ring/actions/workflows/go.yml/badge.svg?branch=master)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ctx42/ring.svg)](https://pkg.go.dev/github.com/ctx42/ring)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/ctx42/ring)](go.mod)
+[![Tests](https://github.com/ctx42/ring/actions/workflows/go.yml/badge.svg?branch=master)](https://github.com/ctx42/ring/actions/workflows/go.yml)
+[![License](https://img.shields.io/github/license/ctx42/ring)](LICENSE.md)
 
-<!-- TOC -->
-* [The `ring` Package](#the-ring-package)
-* [Key Features](#key-features)
-* [Installation](#installation)
-* [Usage](#usage)
-  * [Production Code](#production-code)
-  * [Test Code](#test-code)
-  * [Metadata](#metadata)
-  * [Subcommand Context](#subcommand-context)
-  * [Deterministic Time](#deterministic-time)
-<!-- TOC -->
+# ring
 
-# The `ring` Package
+A program execution context for CLI commands and their tests.
+
+![ring](doc/ring.png)
 
 The `ring` package provides utilities to manage a program's execution context,
 enabling dependency injection for standard I/O streams, environment variables,
-arguments, and time. By avoiding reliance on global state (e.g., `os.Stdin`, 
+arguments, and time. By avoiding reliance on global state (e.g., `os.Stdin`,
 `os.Environ`), it simplifies testing and improves code modularity.
 
-![ring.png](doc/ring.png)
+<!-- TOC -->
+* [ring](#ring)
+  * [Key Features](#key-features)
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+  * [Usage](#usage)
+    * [Production Code](#production-code)
+    * [Test Code](#test-code)
+    * [Metadata](#metadata)
+    * [Subcommand Context](#subcommand-context)
+    * [Deterministic Time](#deterministic-time)
+<!-- TOC -->
 
-# Key Features
+## Key Features
 
-- **Dependency Injection**: inject custom standard I/O streams, environment variables, program name, arguments, and a clock.
+- **Dependency Injection**: inject custom standard I/O streams, environment
+  variables, program name, arguments, a clock, and a read-only filesystem.
 - **Test-Friendly**: simplifies mocking of global dependencies for unit tests.
 - **Metadata Support**: store and manage arbitrary key-value metadata.
 
-# Installation
+## Prerequisites
+
+Go 1.26 or newer.
+
+## Installation
 
 To use `ring` in your project, add it as a dependency:
 
@@ -37,98 +47,92 @@ To use `ring` in your project, add it as a dependency:
 go get github.com/ctx42/ring
 ```
 
-# Usage
+## Usage
 
-The `ring` package centers around the `Ring` type, which encapsulates a 
-program's execution context. Below are examples demonstrating its core 
-functionality.
+The `ring` package centers around the `Ring` type, which encapsulates a
+program's execution context.
 
-## Production Code
-
-Production code example.
+### Production Code
 
 ```go
 package main
 
 import (
-    "context"
-    "os"
+	"fmt"
 
-    "github.com/ctx42/ring/pkg/ring"
-
-    "github.com/user/project/cmd"
+	"github.com/ctx42/ring/pkg/ring"
 )
 
 func main() {
-    // Default Ring:
-    //  - Standard I/O: [os.Stdin], [os.Stdout], [os.Stderr]
-    //  - Environment: [os.Environ]
-    //  - Clock: [NowUTC]
-    //  - Args: os.Args[1:]
-    //  - Name: os.Args[0]
-    //  - Metadata: empty map
-    //  - Filesystem: none
-    rng := ring.New(ring.WithFS(os.DirFS("some/path")))
-
-    ctx := context.Background()
-    
-    exitCode := cmd.Main(ctx, rng) // Call the real application entrypoint.
-    os.Exit(exitCode)
+	rng := ring.New()
+	fmt.Fprintf(rng.Stdout(), "%s\n", rng.Name())
 }
 ```
 
-This way the `cmd.Main` becomes really easy to test. 
+`ring.New` with no options uses:
 
-## Test Code
+- standard I/O: `os.Stdin`, `os.Stdout`, and `os.Stderr`
+- environment: `os.Environ`
+- clock: `NowUTC`
+- arguments: `os.Args[1:]` when `os.Args` is non-empty, otherwise nil
+- name: `os.Args[0]` when present, otherwise empty
+- metadata: an empty map
+- filesystem: no access
+
+### Test Code
 
 Use a buffer for stdout to capture and verify program output without
 touching `os.Stdout`:
 
-<!-- gmdoceg:ExampleNew_inTest -->
+<!-- gmmce:pkg/ring/ExampleNew_inTest -->
 ```go
 // greet simulates a CLI function that writes to the ring's stdout.
 greet := func(rng *ring.Ring) {
-    name := rng.EnvGet("USER_NAME")
-    fmt.Fprintf(rng.Stdout(), "Hello, %s!\n", name)
+	name := rng.EnvGet("USER_NAME")
+	_, _ = fmt.Fprintf(rng.Stdout(), "Hello, %s!\n", name)
 }
 
 var sout bytes.Buffer
 rng := ring.New(
-    ring.WithEnv([]string{"USER_NAME=Alice"}),
-    ring.WithArgs([]string{"--verbose"}),
+	ring.WithEnv([]string{"USER_NAME=Alice"}),
+	ring.WithArgs([]string{"--verbose"}),
 )
 rng.SetStdout(&sout)
 
 greet(rng)
 
-fmt.Print(sout.String())
+_, _ = fmt.Print(sout.String())
 // Output:
 // Hello, Alice!
 ```
 
-## Metadata
+`github.com/ctx42/ring/pkg/ring/ringtest` builds a `Ring` on buffers for
+tests. `ringtest.New` takes the test and returns a `Tester`. `Tester.Ring`
+rebuilds the context with those buffers.
+
+### Metadata
 
 `Ring` carries an arbitrary `map[string]any` that subcommand handlers
 can read and write without extra function parameters:
 
-<!-- gmdoceg:ExampleRing_MetaSet -->
+<!-- gmmce:pkg/ring/ExampleRing_MetaSet -->
 ```go
 rng := ring.New()
 rng.MetaSet("trace-id", "abc-123")
 
-fmt.Println(rng.MetaGet("trace-id"))
+_, _ = fmt.Println(rng.MetaGet("trace-id"))
 // Output:
 // abc-123
 ```
 
-## Subcommand Context
+### Subcommand Context
 
 `Clone` produces a subcommand context with its own environment and
 argument slice. The metadata map, the filesystem, and the standard
-streams are shared — a parent command can set a trace ID once and
-every clone sees it:
+streams are shared — a parent command can set a trace ID once and every
+clone sees it:
 
-<!-- gmdoceg:ExampleRing_Clone -->
+<!-- gmmce:pkg/ring/ExampleRing_Clone -->
 ```go
 parent := ring.New()
 parent.MetaSet("trace-id", "xyz-789")
@@ -136,24 +140,24 @@ parent.MetaSet("trace-id", "xyz-789")
 child := parent.Clone()
 child.SetArgs([]string{"--verbose"})
 
-fmt.Println(child.Args())
-fmt.Println(child.MetaGet("trace-id"))
+_, _ = fmt.Println(child.Args())
+_, _ = fmt.Println(child.MetaGet("trace-id"))
 // Output:
 // [--verbose]
 // xyz-789
 ```
 
-## Deterministic Time
+### Deterministic Time
 
 Inject a fixed clock to make time-dependent code produce stable output
 in tests:
 
-<!-- gmdoceg:ExampleWithClock -->
+<!-- gmmce:pkg/ring/ExampleWithClock -->
 ```go
 fixed := time.Date(2024, 1, 15, 12, 0, 0, 0, time.UTC)
 rng := ring.New(ring.WithClock(func() time.Time { return fixed }))
 
-fmt.Println(rng.Clock()().Format(time.DateOnly))
+_, _ = fmt.Println(rng.Clock()().Format(time.DateOnly))
 // Output:
 // 2024-01-15
 ```
