@@ -254,7 +254,9 @@ func Test_Env_EnvUnset_tabular(t *testing.T) {
 			env.EnvUnset(tc.deleteKey)
 
 			// --- Then ---
-			assert.Equal(t, tc.wantEnv, Sort(env.EnvAll()))
+			have := env.EnvAll()
+			assert.NotNil(t, have)
+			assert.Equal(t, tc.wantEnv, Sort(have))
 		})
 	}
 }
@@ -381,6 +383,7 @@ func Test_EnvUnset_tabular(t *testing.T) {
 			have := EnvUnset(env, tc.deleteKey)
 
 			// --- Then ---
+			assert.NotNil(t, have)
 			assert.Equal(t, tc.wantEnv, Sort(have))
 		})
 	}
