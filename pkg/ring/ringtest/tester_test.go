@@ -51,8 +51,10 @@ func Test_New(t *testing.T) {
 
 		env := []string{"A=B", "C=D"}
 
+		opt := ring.WithEnv(env)
+
 		// --- When ---
-		have := New(tspy, ring.WithEnv(env))
+		have := New(tspy, opt)
 
 		// --- Then ---
 		assert.Equal(t, env, Sort(have.Ring().EnvAll()))
@@ -72,8 +74,10 @@ func Test_New(t *testing.T) {
 
 		tst := New(tspy)
 
+		text := "abc"
+
 		// --- When ---
-		_, _ = tst.sout.WriteString("abc")
+		_, _ = tst.sout.WriteString(text)
 
 		// --- Then ---
 		assert.Equal(t, "abc", tst.sout.String())
@@ -93,8 +97,10 @@ func Test_New(t *testing.T) {
 
 		tst := New(tspy)
 
+		text := "abc"
+
 		// --- When ---
-		_, _ = tst.eout.WriteString("abc")
+		_, _ = tst.eout.WriteString(text)
 
 		// --- Then ---
 		assert.Equal(t, "abc", tst.eout.String())
@@ -133,8 +139,10 @@ func Test_Tester_Ring(t *testing.T) {
 
 		tst := New(tspy)
 
+		args := []string{"a", "b", "c"}
+
 		// --- When ---
-		have := tst.Ring("a", "b", "c")
+		have := tst.Ring(args...)
 
 		// --- Then ---
 		assert.Equal(t, Sort(os.Environ()), Sort(have.EnvAll()))
