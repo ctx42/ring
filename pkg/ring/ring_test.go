@@ -24,6 +24,21 @@ func Test_WithEnv(t *testing.T) {
 
 	// --- Then ---
 	assert.Equal(t, map[string]string{"A": "1", "B": "2"}, rng.hidEnv.env)
+
+	t.Run("nil slice", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{}
+
+		var env []string
+
+		// --- When ---
+		WithEnv(env)(rng)
+
+		// --- Then ---
+		assert.NotNil(t, rng.hidEnv)
+		assert.NotNil(t, rng.hidEnv.env)
+		assert.Empty(t, rng.hidEnv.env)
+	})
 }
 
 func Test_WithName(t *testing.T) {

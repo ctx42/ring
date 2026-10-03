@@ -35,7 +35,9 @@ type Clock func() time.Time
 // Option configures a [Ring] during creation with [New].
 type Option func(*Ring)
 
-// WithEnv configures a [Ring] with the given environment variables.
+// WithEnv configures a [Ring] with the given environment variables. A nil
+// slice sets an empty environment. Omit WithEnv to keep [os.Environ], which
+// [New] applies when no environment was configured.
 func WithEnv(env []string) Option {
 	return func(rng *Ring) { rng.hidEnv = NewEnv(env) }
 }
