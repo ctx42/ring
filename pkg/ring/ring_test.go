@@ -70,8 +70,10 @@ func Test_WithMeta(t *testing.T) {
 func Test_WithFS(t *testing.T) {
 	// --- Given ---
 	rng := &Ring{}
+
 	root := must.Value(os.OpenRoot("ringtest"))
 	t.Cleanup(func() { _ = root.Close() })
+
 	FS := root.FS()
 
 	// --- When ---
@@ -109,6 +111,7 @@ func Test_defaultRing(t *testing.T) {
 	assert.Equal(t, os.Args[0], have.name)
 	assert.Equal(t, os.Args[1:], have.args)
 	assert.Nil(t, have.meta)
+
 	assert.Fields(t, 7, Ring{})
 }
 
@@ -128,6 +131,7 @@ func Test_New(t *testing.T) {
 		assert.Equal(t, os.Args[1:], have.args)
 		assert.NotNil(t, have.meta)
 		assert.Empty(t, have.meta)
+
 		assert.Fields(t, 7, Ring{})
 	})
 
@@ -174,6 +178,7 @@ func Test_New(t *testing.T) {
 func Test_Ring_Clock(t *testing.T) {
 	// --- Given ---
 	custom := func() time.Time { return time.Time{} }
+
 	rng := &Ring{clock: custom}
 
 	// --- When ---
@@ -186,6 +191,7 @@ func Test_Ring_Clock(t *testing.T) {
 func Test_Ring_Args(t *testing.T) {
 	// --- Given ---
 	args := []string{"-arg0", "-arg1"}
+
 	rng := &Ring{args: args}
 
 	// --- When ---
@@ -198,6 +204,7 @@ func Test_Ring_Args(t *testing.T) {
 func Test_Ring_SetArgs(t *testing.T) {
 	// --- Given ---
 	args := []string{"-arg0", "-arg1"}
+
 	rng := &Ring{}
 
 	// --- When ---
@@ -374,6 +381,7 @@ func Test_Ring_Clone(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		// --- Given ---
 		rngFS := os.DirFS("ringtest")
+
 		rng := New(WithFS(rngFS))
 
 		// --- When ---
@@ -388,6 +396,7 @@ func Test_Ring_Clone(t *testing.T) {
 		assert.Equal(t, rngFS, have.fs)
 		assert.NotSame(t, rng.args, have.args)
 		assert.Same(t, rng.meta, have.meta)
+
 		assert.Fields(t, 7, Ring{})
 	})
 
