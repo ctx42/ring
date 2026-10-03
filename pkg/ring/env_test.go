@@ -144,8 +144,12 @@ func Test_Env_EnvSet(t *testing.T) {
 		// --- Given ---
 		env := &Env{env: map[string]string{}}
 
+		key := "A"
+
+		val := "1"
+
 		// --- When ---
-		env.EnvSet("A", "1")
+		env.EnvSet(key, val)
 
 		// --- Then ---
 		assert.Equal(t, map[string]string{"A": "1"}, env.env)
@@ -155,8 +159,12 @@ func Test_Env_EnvSet(t *testing.T) {
 		// --- Given ---
 		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
 
+		key := "A"
+
+		val := "2"
+
 		// --- When ---
-		env.EnvSet("A", "2")
+		env.EnvSet(key, val)
 
 		// --- Then ---
 		assert.Equal(t, map[string]string{"A": "2", "B": "2"}, env.env)
@@ -168,8 +176,10 @@ func Test_Env_EnvSetFrom(t *testing.T) {
 		// --- Given ---
 		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
 
+		src := map[string]string{"A": "-1", "C": "3"}
+
 		// --- When ---
-		env.EnvSetFrom(map[string]string{"A": "-1", "C": "3"})
+		env.EnvSetFrom(src)
 
 		// --- Then ---
 		want := map[string]string{"A": "-1", "B": "2", "C": "3"}
@@ -180,8 +190,10 @@ func Test_Env_EnvSetFrom(t *testing.T) {
 		// --- Given ---
 		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
 
+		var src map[string]string
+
 		// --- When ---
-		env.EnvSetFrom(nil)
+		env.EnvSetFrom(src)
 
 		// --- Then ---
 		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, env.env)
@@ -193,8 +205,10 @@ func Test_Env_EnvSetWith(t *testing.T) {
 		// --- Given ---
 		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
 
+		src := []string{"A=-1", "C=3"}
+
 		// --- When ---
-		env.EnvSetWith([]string{"A=-1", "C=3"})
+		env.EnvSetWith(src)
 
 		// --- Then ---
 		want := map[string]string{"A": "-1", "B": "2", "C": "3"}
@@ -205,8 +219,10 @@ func Test_Env_EnvSetWith(t *testing.T) {
 		// --- Given ---
 		env := &Env{env: map[string]string{"A": "1", "B": "2"}}
 
+		var src []string
+
 		// --- When ---
-		env.EnvSetWith(nil)
+		env.EnvSetWith(src)
 
 		// --- Then ---
 		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, env.env)
@@ -274,8 +290,12 @@ func Test_EnvSet(t *testing.T) {
 		// --- Given ---
 		env := []string{"A=1"}
 
+		key := "B"
+
+		val := "2"
+
 		// --- When ---
-		have := EnvSet(env, "B", "2")
+		have := EnvSet(env, key, val)
 
 		// --- Then ---
 		assert.Equal(t, []string{"A=1", "B=2"}, Sort(have))
@@ -285,8 +305,12 @@ func Test_EnvSet(t *testing.T) {
 		// --- Given ---
 		env := []string{"A=1", "B=2", "C=3"}
 
+		key := "B"
+
+		val := "4"
+
 		// --- When ---
-		have := EnvSet(env, "B", "4")
+		have := EnvSet(env, key, val)
 
 		// --- Then ---
 		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, Sort(have))
@@ -298,8 +322,12 @@ func Test_EnvSet(t *testing.T) {
 
 		snap := slices.Clone(orig)
 
+		key := "B"
+
+		val := "4"
+
 		// --- When ---
-		have := EnvSet(orig, "B", "4")
+		have := EnvSet(orig, key, val)
 
 		// --- Then ---
 		assert.Equal(t, []string{"A=1", "B=4", "C=3"}, Sort(have))
@@ -315,8 +343,10 @@ func Test_EnvUnset(t *testing.T) {
 
 		snap := slices.Clone(orig)
 
+		key := "B"
+
 		// --- When ---
-		have := EnvUnset(orig, "B")
+		have := EnvUnset(orig, key)
 
 		// --- Then ---
 		assert.Equal(t, []string{"A=1", "C=3"}, Sort(have))
@@ -431,8 +461,11 @@ func Test_EnvOrOs(t *testing.T) {
 	})
 
 	t.Run("return os", func(t *testing.T) {
+		// --- Given ---
+		var env []string
+
 		// --- When ---
-		have := EnvOrOs(nil)
+		have := EnvOrOs(env)
 
 		// --- Then ---
 		assert.Equal(t, os.Environ(), have)
@@ -445,8 +478,10 @@ func Test_SetFrom(t *testing.T) {
 		env := make([]string, 0, 10)
 		env = append(env, "A=1", "B=2")
 
+		src := map[string]string{"A": "-1", "C": "3"}
+
 		// --- When ---
-		have := SetFrom(env, map[string]string{"A": "-1", "C": "3"})
+		have := SetFrom(env, src)
 
 		// --- Then ---
 		assert.Equal(t, []string{"A=-1", "B=2", "C=3"}, Sort(have))
@@ -458,8 +493,10 @@ func Test_SetFrom(t *testing.T) {
 		env := make([]string, 0, 10)
 		env = append(env, "A=1", "B=2")
 
+		var src map[string]string
+
 		// --- When ---
-		have := SetFrom(env, nil)
+		have := SetFrom(env, src)
 
 		// --- Then ---
 		assert.Equal(t, []string{"A=1", "B=2"}, have)
