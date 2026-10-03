@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
 // SPDX-License-Identifier: MIT
 
+// Package ringtest builds a [ring.Ring] around buffers so tests can set
+// the environment, arguments, and standard streams and read what was
+// written.
+//
+// Import it as "github.com/ctx42/ring/pkg/ring/ringtest".
 package ringtest
 
 import (
