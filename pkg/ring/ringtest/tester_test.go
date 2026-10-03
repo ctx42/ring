@@ -137,6 +137,25 @@ func Test_Tester_Ring(t *testing.T) {
 		// --- Then ---
 		assert.NotSame(t, m, rng.MetaAll())
 	})
+
+	t.Run("with filesystem", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(2)
+		tspy.Close()
+
+		root := os.DirFS("..")
+
+		tst := New(tspy, ring.WithFS(root))
+
+		// --- When ---
+		have := tst.Ring()
+
+		// --- Then ---
+		filesystem, err := have.FS()
+		assert.NoError(t, err)
+		assert.Equal(t, root, filesystem)
+	})
 }
 
 func Test_Tester_Streams(t *testing.T) {

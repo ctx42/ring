@@ -61,6 +61,9 @@ func (tst *Tester) Ring(args ...string) *ring.Ring {
 		ring.WithName(tst.rng.Name()),
 		ring.WithArgs(args),
 	}
+	if filesystem, err := tst.rng.FS(); err == nil {
+		opts = append(opts, ring.WithFS(filesystem))
+	}
 	rng := ring.New(opts...)
 	rng.SetStdin(tst.sin)
 	rng.SetStdout(tst.sout)
