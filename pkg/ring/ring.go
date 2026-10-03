@@ -17,11 +17,12 @@ import (
 
 // Sentinel errors.
 var (
-	// ErrReqMeta indicates a required metadata key is missing.
+	// ErrReqMeta is the sentinel callers return when a required metadata
+	// key is missing.
 	ErrReqMeta = errors.New("required ring metadata key")
 
-	// ErrInvMeta indicates a metadata key is invalid due to an incorrect type,
-	// format, or value.
+	// ErrInvMeta is the sentinel callers return when a metadata value has
+	// the wrong type, format, or value.
 	ErrInvMeta = errors.New("invalid ring metadata key")
 
 	// ErrNoFsAccess is returned when [Ring] has no filesystem access.
