@@ -58,6 +58,48 @@ func Test_New(t *testing.T) {
 		// --- Then ---
 		assert.Equal(t, env, Sort(tst.Ring().EnvAll()))
 	})
+
+	t.Run("error - stdout written", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(2)
+		tspy.ExpectError()
+		wMsg := "expected buffer to be empty:\n" +
+			"  name: stdout\n" +
+			"  want: <empty>\n" +
+			"  have: abc"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
+		tst := New(tspy)
+
+		// --- When ---
+		_, _ = tst.sout.WriteString("abc")
+
+		// --- Then ---
+		assert.Equal(t, "abc", tst.sout.String())
+	})
+
+	t.Run("error - stderr written", func(t *testing.T) {
+		// --- Given ---
+		tspy := tester.New(t)
+		tspy.ExpectCleanups(2)
+		tspy.ExpectError()
+		wMsg := "expected buffer to be empty:\n" +
+			"  name: stderr\n" +
+			"  want: <empty>\n" +
+			"  have: abc"
+		tspy.ExpectLogEqual(wMsg)
+		tspy.Close()
+
+		tst := New(tspy)
+
+		// --- When ---
+		_, _ = tst.eout.WriteString("abc")
+
+		// --- Then ---
+		assert.Equal(t, "abc", tst.eout.String())
+	})
 }
 
 func Test_Tester_Ring(t *testing.T) {
@@ -209,24 +251,6 @@ func Test_Tester_WetStdout(t *testing.T) {
 		// --- Then ---
 		assert.Same(t, tst, have)
 	})
-
-	t.Run("want stdout dry but is wet", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(2)
-		tspy.ExpectError()
-		wMsg := "expected buffer to be empty:\n" +
-			"  name: stdout\n" +
-			"  want: <empty>\n" +
-			"  have: abc"
-		tspy.ExpectLogEqual(wMsg)
-		tspy.Close()
-
-		tst := New(tspy)
-
-		// --- When ---
-		_, _ = tst.sout.WriteString("abc")
-	})
 }
 
 func Test_Tester_ResetStdout(t *testing.T) {
@@ -261,24 +285,6 @@ func Test_Tester_WetStderr(t *testing.T) {
 
 		// --- Then ---
 		assert.Same(t, tst, have)
-	})
-
-	t.Run("want stderr dry but is wet", func(t *testing.T) {
-		// --- Given ---
-		tspy := tester.New(t)
-		tspy.ExpectCleanups(2)
-		tspy.ExpectError()
-		wMsg := "expected buffer to be empty:\n" +
-			"  name: stderr\n" +
-			"  want: <empty>\n" +
-			"  have: abc"
-		tspy.ExpectLogEqual(wMsg)
-		tspy.Close()
-
-		tst := New(tspy)
-
-		// --- When ---
-		_, _ = tst.eout.WriteString("abc")
 	})
 }
 
