@@ -140,10 +140,10 @@ func Test_New(t *testing.T) {
 		env := []string{"A=1", "B=2"}
 
 		// --- When ---
-		rng := New(WithEnv(env))
+		have := New(WithEnv(env))
 
 		// --- Then ---
-		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, rng.env)
+		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, have.env)
 	})
 
 	t.Run("nil option", func(t *testing.T) {
