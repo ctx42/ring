@@ -56,7 +56,8 @@ func (ios *IO) SetStdout(sout io.Writer) { ios.stdout = sout }
 // SetStderr stores eout, including a nil writer, as the standard error.
 func (ios *IO) SetStderr(eout io.Writer) { ios.stderr = eout }
 
-// IOClone creates a copy of the current [IO] instance with identical streams.
+// IOClone returns a copy of this [IO] with the same streams. The IO prefix
+// keeps the promoted method from taking the name [Ring.Clone].
 func (ios *IO) IOClone() *IO {
 	return &IO{
 		stdin:  ios.stdin,
