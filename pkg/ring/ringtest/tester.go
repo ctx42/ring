@@ -94,7 +94,8 @@ func (tst *Tester) SetStdin(sin *bytes.Buffer) *Tester {
 	return tst
 }
 
-// WetStdout sets the expectation that standard output will be written to.
+// WetStdout expects a write to standard output. Call it before [Ring] or
+// [Streams]. A ring already returned keeps the previous buffer.
 func (tst *Tester) WetStdout() *Tester {
 	tst.t.Helper()
 	tst.sout = iokit.WetBuffer(tst.t, "stdout")
@@ -104,7 +105,8 @@ func (tst *Tester) WetStdout() *Tester {
 // ResetStdout resets the standard output buffer, removing all written data.
 func (tst *Tester) ResetStdout() { tst.sout.Reset() }
 
-// WetStderr sets the expectation that standard error will be written to.
+// WetStderr expects a write to standard error. Call it before [Ring] or
+// [Streams]. A ring already returned keeps the previous buffer.
 func (tst *Tester) WetStderr() *Tester {
 	tst.t.Helper()
 	tst.eout = iokit.WetBuffer(tst.t, "stderr")
