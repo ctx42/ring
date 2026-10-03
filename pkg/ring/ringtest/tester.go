@@ -27,17 +27,20 @@ type Tester struct {
 	t    tester.T      // The test manager.
 }
 
-// New returns a new instance of [Tester] with the given options. By
-// default, the constructed [ring.Ring] test instance is returned with:
+// New returns a new [Tester] with the given options. The stored [ring.Ring]
+// keeps [os.Stdin], [os.Stdout], and [os.Stderr] until [Tester.Ring] or
+// [Tester.Streams] attaches the tester buffers.
+//
+// Defaults:
 //
 //   - name set to the current program name,
 //   - arguments set to nil,
 //   - environment set to [os.Environ],
 //   - metadata set to an empty map,
 //   - clock set to [ring.NowUTC],
-//   - standard input set to empty [bytes.Buffer],
-//   - standard output set to [iokit.DryBuffer],
-//   - standard error set to [iokit.DryBuffer],
+//   - standard input on the tester: an empty [bytes.Buffer],
+//   - standard output on the tester: [iokit.DryBuffer],
+//   - standard error on the tester: [iokit.DryBuffer],
 func New(t tester.T, opts ...ring.Option) *Tester {
 	t.Helper()
 	opts = append([]ring.Option{ring.WithArgs(nil)}, opts...)
