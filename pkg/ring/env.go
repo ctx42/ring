@@ -109,7 +109,7 @@ func EnvGet(env []string, key string) string {
 }
 
 // EnvGetDefault retrieves the value of the "env" variable named by the key. If
-// the key is not present in the environment, it will return def value.
+// the key is not present in the environment, it returns def.
 func EnvGetDefault(env []string, key, def string) string {
 	if val, exist := EnvLookup(env, key); exist {
 		return val
@@ -131,7 +131,7 @@ func EnvUnset(env []string, key string) []string {
 	return m.EnvAll()
 }
 
-// EnvSplit parses [os.Environ] results and returns it as a key value map.
+// EnvSplit parses [os.Environ] results and returns them as a key-value map.
 func EnvSplit(env []string) map[string]string {
 	m := make(map[string]string, 10)
 	for _, s := range env {

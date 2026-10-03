@@ -17,7 +17,7 @@ type Streamer interface {
 
 var _ Streamer = &IO{} // Compile time check.
 
-// IO represents program standard I/O streams.
+// IO represents a program's standard I/O streams.
 type IO struct {
 	stdin  io.Reader // Program standard input.
 	stdout io.Writer // Program standard output.

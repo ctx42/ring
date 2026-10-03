@@ -18,7 +18,7 @@ import (
 	"github.com/ctx42/ring/pkg/ring"
 )
 
-// Tester represents CLI test helper.
+// Tester represents a CLI test helper.
 type Tester struct {
 	rng  *ring.Ring    // The test ring.
 	sin  *bytes.Buffer // Buffer representing standard input.
@@ -27,8 +27,8 @@ type Tester struct {
 	t    tester.T      // The test manager.
 }
 
-// New returns new instance of [Tester] with given options. By default, the
-// constructed [ring.Ring] test instance is returned with:
+// New returns a new instance of [Tester] with the given options. By
+// default, the constructed [ring.Ring] test instance is returned with:
 //
 //   - name set to the current program name,
 //   - arguments set to nil,
@@ -85,7 +85,7 @@ func (tst *Tester) Streams() *ring.IO {
 	return ios
 }
 
-// SetStdin set buffer to read from as standard input.
+// SetStdin sets the buffer to read from as standard input.
 func (tst *Tester) SetStdin(sin *bytes.Buffer) *Tester {
 	tst.sin = sin
 	return tst
@@ -98,17 +98,17 @@ func (tst *Tester) WetStdout() *Tester {
 	return tst
 }
 
-// ResetStdout resets the standard output buffer removing all written data.
+// ResetStdout resets the standard output buffer, removing all written data.
 func (tst *Tester) ResetStdout() { tst.sout.Reset() }
 
-// WetStderr sets expectation that standard error will be written to.
+// WetStderr sets the expectation that standard error will be written to.
 func (tst *Tester) WetStderr() *Tester {
 	tst.t.Helper()
 	tst.eout = iokit.WetBuffer(tst.t, "stderr")
 	return tst
 }
 
-// ResetStderr resets the standard error buffer removing all written data.
+// ResetStderr resets the standard error buffer, removing all written data.
 func (tst *Tester) ResetStderr() { tst.eout.Reset() }
 
 // Stdin returns the current content of the stdin buffer.

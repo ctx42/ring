@@ -61,7 +61,7 @@ func WithMeta(meta map[string]any) Option {
 	return func(rng *Ring) { rng.meta = meta }
 }
 
-// WithFS configures a [Ring] with access to read-only filesystem.
+// WithFS configures a [Ring] with access to a read-only filesystem.
 func WithFS(filesystem fs.FS) Option {
 	return func(rng *Ring) { rng.fs = filesystem }
 }
@@ -149,7 +149,7 @@ func New(opts ...Option) *Ring {
 	return rng
 }
 
-// Clock returns function returning current time in UTC.
+// Clock returns the function returning the current time in UTC.
 func (rng *Ring) Clock() func() time.Time { return rng.clock }
 
 // Args returns the program arguments, excluding the program name. The
@@ -162,7 +162,7 @@ func (rng *Ring) SetArgs(args []string) *Ring {
 	return rng
 }
 
-// Name returns program name.
+// Name returns the program name.
 func (rng *Ring) Name() string { return rng.name }
 
 // MetaSet sets the metadata value for the given key. If the key already exists,
