@@ -294,6 +294,7 @@ func Test_Env_EnvClone(t *testing.T) {
 	// --- Then ---
 	assert.Equal(t, map[string]string{"A": "1"}, env.env)
 
+	assert.Equal(t, map[string]string{"A": "1"}, have.env)
 	assert.NotSame(t, env.env, have.env)
 	assert.NotSame(t, env, have)
 
