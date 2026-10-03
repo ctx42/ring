@@ -240,6 +240,7 @@ func Test_Ring_SetArgs(t *testing.T) {
 
 	// --- Then ---
 	assert.Same(t, rng, have)
+
 	assert.Same(t, args, rng.args)
 }
 
