@@ -91,17 +91,23 @@ type Ring struct {
 // Configuration:
 //   - Standard I/O: [os.Stdin], [os.Stdout], [os.Stderr]
 //   - Clock: [NowUTC]
-//   - Name: os.Args[0] (program name)
-//   - Args: os.Args[1:] (excludes program name)
+//   - Name: os.Args[0] when present, otherwise empty
+//   - Args: os.Args[1:] when os.Args is non-empty, otherwise nil
 //   - Environment: nil
 //   - Metadata: nil
 //   - Filesystem: nil
 func defaultRing() *Ring {
+	var name string
+	var args []string
+	if len(os.Args) > 0 {
+		name = os.Args[0]
+		args = os.Args[1:]
+	}
 	return &Ring{
 		hidIO: NewIO(),
 		clock: NowUTC,
-		name:  os.Args[0],
-		args:  os.Args[1:],
+		name:  name,
+		args:  args,
 	}
 }
 
@@ -110,9 +116,9 @@ func defaultRing() *Ring {
 // If no options are specified, it defaults to:
 //   - Standard I/O: [os.Stdin], [os.Stdout], [os.Stderr]
 //   - Environment: [os.Environ]
-//   - Clock: [NowUTC]
-//   - Args: os.Args[1:]
-//   - Name: os.Args[0]
+//   - Clock: [NowUTC], including when a clock option is nil
+//   - Args: os.Args[1:] when os.Args is non-empty, otherwise nil
+//   - Name: os.Args[0] when present, otherwise empty
 //   - Metadata: empty map
 //   - Filesystem: no access.
 //
@@ -136,6 +142,9 @@ func New(opts ...Option) *Ring {
 	if rng.meta == nil {
 		rng.meta = make(map[string]any)
 	}
+	if rng.clock == nil {
+		rng.clock = NowUTC
+	}
 	return rng
 }
 
@@ -158,6 +167,9 @@ func (rng *Ring) Name() string { return rng.name }
 // MetaSet sets the metadata value for the given key. If the key already exists,
 // its value is overwritten. The value may be any type, including nil.
 func (rng *Ring) MetaSet(key string, value any) {
+	if rng.meta == nil {
+		rng.meta = make(map[string]any)
+	}
 	rng.meta[key] = value
 }
 
@@ -199,9 +211,17 @@ func (rng *Ring) FS() (fs.FS, error) {
 // are shared, so a metadata change or a write to a stream is visible on
 // every clone.
 func (rng *Ring) Clone() *Ring {
+	var env *Env
+	if rng.hidEnv != nil {
+		env = rng.hidEnv.EnvClone()
+	}
+	var ios *IO
+	if rng.hidIO != nil {
+		ios = rng.hidIO.IOClone()
+	}
 	return &Ring{
-		hidEnv: rng.hidEnv.EnvClone(),
-		hidIO:  rng.hidIO.IOClone(),
+		hidEnv: env,
+		hidIO:  ios,
 		clock:  rng.clock,
 		fs:     rng.fs,
 		name:   rng.name,

@@ -82,6 +82,20 @@ func Test_WithFS(t *testing.T) {
 }
 
 func Test_defaultRing(t *testing.T) {
+	t.Run("empty os.Args", func(t *testing.T) {
+		// --- Given ---
+		orig := os.Args
+		t.Cleanup(func() { os.Args = orig })
+		os.Args = nil
+
+		// --- When ---
+		have := defaultRing()
+
+		// --- Then ---
+		assert.Equal(t, "", have.name)
+		assert.Nil(t, have.args)
+	})
+
 	// --- When ---
 	have := defaultRing()
 
@@ -141,6 +155,19 @@ func Test_New(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, name, have.Name())
+	})
+
+	t.Run("nil clock", func(t *testing.T) {
+		// --- Given ---
+		var clk Clock
+
+		opt := WithClock(clk)
+
+		// --- When ---
+		have := New(opt)
+
+		// --- Then ---
+		assert.Same(t, NowUTC, have.Clock())
 	})
 }
 
@@ -213,6 +240,21 @@ func Test_Ring_MetaSet(t *testing.T) {
 
 		// --- Then ---
 		assert.Equal(t, map[string]any{"A": 2}, rng.meta)
+	})
+
+	t.Run("nil map", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{}
+
+		key := "A"
+
+		val := 1
+
+		// --- When ---
+		rng.MetaSet(key, val)
+
+		// --- Then ---
+		assert.Equal(t, val, rng.MetaGet(key))
 	})
 }
 
@@ -347,5 +389,18 @@ func Test_Ring_Clone(t *testing.T) {
 		assert.NotSame(t, rng.args, have.args)
 		assert.Same(t, rng.meta, have.meta)
 		assert.Fields(t, 7, Ring{})
+	})
+
+	t.Run("zero value", func(t *testing.T) {
+		// --- Given ---
+		rng := &Ring{}
+
+		// --- When ---
+		have := rng.Clone()
+
+		// --- Then ---
+		assert.Nil(t, have.hidEnv)
+		assert.Nil(t, have.hidIO)
+		assert.NotSame(t, rng, have)
 	})
 }
