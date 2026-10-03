@@ -17,7 +17,7 @@ func ExampleNew_inTest() {
 	// greet simulates a CLI function that writes to the ring's stdout.
 	greet := func(rng *ring.Ring) {
 		name := rng.EnvGet("USER_NAME")
-		fmt.Fprintf(rng.Stdout(), "Hello, %s!\n", name)
+		_, _ = fmt.Fprintf(rng.Stdout(), "Hello, %s!\n", name)
 	}
 
 	var sout bytes.Buffer
@@ -29,7 +29,7 @@ func ExampleNew_inTest() {
 
 	greet(rng)
 
-	fmt.Print(sout.String())
+	_, _ = fmt.Print(sout.String())
 	// Output:
 	// Hello, Alice!
 }
@@ -40,7 +40,7 @@ func ExampleWithClock() {
 	fixed := time.Date(2024, 1, 15, 12, 0, 0, 0, time.UTC)
 	rng := ring.New(ring.WithClock(func() time.Time { return fixed }))
 
-	fmt.Println(rng.Clock()().Format(time.DateOnly))
+	_, _ = fmt.Println(rng.Clock()().Format(time.DateOnly))
 	// Output:
 	// 2024-01-15
 }
@@ -52,7 +52,7 @@ func ExampleRing_MetaSet() {
 	rng := ring.New()
 	rng.MetaSet("trace-id", "abc-123")
 
-	fmt.Println(rng.MetaGet("trace-id"))
+	_, _ = fmt.Println(rng.MetaGet("trace-id"))
 	// Output:
 	// abc-123
 }
@@ -67,8 +67,8 @@ func ExampleRing_Clone() {
 	child := parent.Clone()
 	child.SetArgs([]string{"--verbose"})
 
-	fmt.Println(child.Args())
-	fmt.Println(child.MetaGet("trace-id"))
+	_, _ = fmt.Println(child.Args())
+	_, _ = fmt.Println(child.MetaGet("trace-id"))
 	// Output:
 	// [--verbose]
 	// xyz-789
