@@ -65,7 +65,8 @@ func Test_New(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(2)
 		tspy.ExpectError()
-		wMsg := "expected buffer to be empty:\n" +
+		wMsg := "" +
+			"expected buffer to be empty:\n" +
 			"  name: stdout\n" +
 			"  want: <empty>\n" +
 			"  have: abc"
@@ -88,7 +89,8 @@ func Test_New(t *testing.T) {
 		tspy := tester.New(t)
 		tspy.ExpectCleanups(2)
 		tspy.ExpectError()
-		wMsg := "expected buffer to be empty:\n" +
+		wMsg := "" +
+			"expected buffer to be empty:\n" +
 			"  name: stderr\n" +
 			"  want: <empty>\n" +
 			"  have: abc"
