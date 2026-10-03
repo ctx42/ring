@@ -36,7 +36,6 @@ func Test_New(t *testing.T) {
 		assert.Same(t, ring.NowUTC, tst.rng.Clock())
 		assert.Equal(t, os.Args[0], tst.rng.Name())
 		assert.Empty(t, tst.rng.Args())
-
 		// The instance of [tester.Tester].
 		assert.Empty(t, tst.sin.String())
 		assert.Equal(t, "", tst.sout.String())
@@ -224,6 +223,7 @@ func Test_Tester_SetStdin(t *testing.T) {
 	tspy.Close()
 
 	buf := &bytes.Buffer{}
+
 	tst := New(tspy)
 
 	// --- When ---
