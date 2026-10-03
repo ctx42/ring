@@ -24,7 +24,7 @@ type Environ interface {
 	// [Environ.EnvLookup].
 	EnvGet(key string) string
 
-	// EnvSet sets variable.
+	// EnvSet sets a variable.
 	EnvSet(key, value string)
 
 	// EnvUnset unsets a single environment variable.
