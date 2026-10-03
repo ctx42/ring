@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: (c) 2025 Rafal Zajac <rzajac@gmail.com>
 // SPDX-License-Identifier: MIT
 
+// Package ring provides a program execution context that bundles standard
+// I/O, environment variables, arguments, a clock, and metadata.
+//
+// Import it as "github.com/ctx42/ring/pkg/ring".
 package ring
 
 import (
