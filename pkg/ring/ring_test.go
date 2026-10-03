@@ -45,17 +45,6 @@ func Test_WithArgs(t *testing.T) {
 	assert.Equal(t, []string{"A=1", "B=2"}, rng.args)
 }
 
-func Test_WithMeta(t *testing.T) {
-	// --- Given ---
-	rng := &Ring{}
-
-	// --- When ---
-	WithMeta(map[string]any{"A": 1, "B": 2})(rng)
-
-	// --- Then ---
-	assert.Equal(t, map[string]any{"A": 1, "B": 2}, rng.meta)
-}
-
 func Test_WithClock(t *testing.T) {
 	// --- Given ---
 	rng := &Ring{}
@@ -65,6 +54,17 @@ func Test_WithClock(t *testing.T) {
 
 	// --- Then ---
 	assert.Same(t, time.Now, rng.clock)
+}
+
+func Test_WithMeta(t *testing.T) {
+	// --- Given ---
+	rng := &Ring{}
+
+	// --- When ---
+	WithMeta(map[string]any{"A": 1, "B": 2})(rng)
+
+	// --- Then ---
+	assert.Equal(t, map[string]any{"A": 1, "B": 2}, rng.meta)
 }
 
 func Test_WithFS(t *testing.T) {
