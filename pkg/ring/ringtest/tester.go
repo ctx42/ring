@@ -31,7 +31,7 @@ type Tester struct {
 // constructed [ring.Ring] test instance is returned with:
 //
 //   - name set to the current program name,
-//   - arguments set to empty slice,
+//   - arguments set to nil,
 //   - environment set to [os.Environ],
 //   - metadata set to an empty map,
 //   - clock set to [ring.NowUTC],
