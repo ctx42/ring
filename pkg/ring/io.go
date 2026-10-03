@@ -20,13 +20,14 @@ type Streamer interface {
 	Stderr() io.Writer
 }
 
-var _ Streamer = &IO{} // Compile time check.
+// IO implements Streamer.
+var _ Streamer = &IO{}
 
 // IO represents a program's standard I/O streams.
 type IO struct {
-	stdin  io.Reader // Program standard input.
-	stdout io.Writer // Program standard output.
-	stderr io.Writer // Program standard error.
+	stdin  io.Reader // This is the program's standard input.
+	stdout io.Writer // This is the program's standard output.
+	stderr io.Writer // This is the program's standard error.
 }
 
 // NewIO returns a new instance of [IO] with [os.Stdin], [os.Stdout],
