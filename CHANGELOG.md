@@ -1,3 +1,65 @@
+## v0.8.0 (Sat, 03 Oct 2026 12:40:09 UTC)
+- chore: update `github.com/ctx42/testing` to v0.56.0 and `github.com/ctx42/testkit` to v0.15.0.
+- fix(ringtest): keep filesystem on Tester.Ring.
+- docs(ring): document the ring package.
+- docs(ringtest): document the ringtest package.
+- docs(ring): describe metadata sentinels as caller errors.
+- docs(ring): say which Clone fields are shared.
+- fix(ring): skip a nil option passed to New.
+- fix(ring): tolerate empty args, a nil clock, and a zero Ring.
+- test(ring): widen the NowUTC window to one second.
+- test(ringtest): expect dry-buffer writes on New.
+- test(ring): order WithClock ahead of WithMeta.
+- test(ring): order Test_EnvUnset ahead of its table test.
+- test(ring): call IO getters from the When step.
+- test(ring): separate IO test subjects with blank lines.
+- test(ring): separate ring test subjects with blank lines.
+- test(ring): separate env test subjects with blank lines.
+- test(ringtest): separate tester subjects with blank lines.
+- test(ring): name the NewIO result have.
+- test(ring): name the New result have.
+- test(ringtest): name When results have.
+- test(ring): prepare When arguments.
+- test(ring): prepare env When arguments.
+- test(ringtest): prepare When arguments.
+- test(ring): discard example print results.
+- test(ringtest): align dry-buffer failure text.
+- refactor(ring): assert Ring implements Environ.
+- test(ring): assert Clone copies env and shares streams.
+- docs(ringtest): say New stores nil arguments.
+- docs: correct godoc grammar.
+- docs(ring): cross-reference IO from NewIO.
+- docs(ring): write Streamer method comments as sentences.
+- test(ring): drop the redundant loop variable copy.
+- fix(ring)!: return an empty slice from EnvAll.
+- docs: give the README a runnable quickstart.
+- fix(ring): allocate the map in EnvSet when it is nil.
+- fix(ring)!: return an empty slice from SetFrom of a nil env.
+- test(ring): assert EnvClone copies the entries.
+- test(ring): reject a nil slice from an empty EnvUnset.
+- test(ring): pin EnvOrOs of an empty slice.
+- docs(ring): say a nil WithEnv is empty.
+- docs(ring): warn that the zero Ring is not safe.
+- docs(ring): mention the filesystem in the overview.
+- docs(ring): write Ring comments as sentences.
+- docs(ring): say where Ring.Name comes from.
+- test(ring): separate the SetArgs assertions.
+- docs(ring): correct the EnvSet interface wording.
+- docs(ring): say EnvSet and EnvUnset return a new slice.
+- docs(ring): write the Env compile-time check as a sentence.
+- docs(ring): explain the Env method prefixes.
+- docs(ring): write IO comments as sentences.
+- docs(ring): say the IO setters store a nil stream.
+- docs(ring): explain the IOClone name.
+- docs(ringtest): describe tester streams on Ring.
+- docs(ringtest): say wet buffers apply to the next ring.
+- docs(ringtest): write Tester field comments as sentences.
+- test(ringtest): expect nil arguments from New.
+- test(ringtest): unwrap the filesystem readback.
+- test(ringtest): separate assertion subjects.
+- test(ringtest): name dry wet-buffer failures as errors.
+- refactor(ring): drop redundant embed selectors.
+
 ## v0.7.1 (Fri, 03 Jul 2026 15:31:28 UTC)
 - chore: update dependencies.
 
