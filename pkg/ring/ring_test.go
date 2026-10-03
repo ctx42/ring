@@ -16,8 +16,10 @@ func Test_WithEnv(t *testing.T) {
 	// --- Given ---
 	rng := &Ring{}
 
+	env := []string{"A=1", "B=2"}
+
 	// --- When ---
-	WithEnv([]string{"A=1", "B=2"})(rng)
+	WithEnv(env)(rng)
 
 	// --- Then ---
 	assert.Equal(t, map[string]string{"A": "1", "B": "2"}, rng.hidEnv.env)
@@ -27,44 +29,52 @@ func Test_WithName(t *testing.T) {
 	// --- Given ---
 	rng := &Ring{}
 
+	name := "abc"
+
 	// --- When ---
-	WithName("abc")(rng)
+	WithName(name)(rng)
 
 	// --- Then ---
-	assert.Equal(t, "abc", rng.name)
+	assert.Equal(t, name, rng.name)
 }
 
 func Test_WithArgs(t *testing.T) {
 	// --- Given ---
 	rng := &Ring{}
 
+	args := []string{"A=1", "B=2"}
+
 	// --- When ---
-	WithArgs([]string{"A=1", "B=2"})(rng)
+	WithArgs(args)(rng)
 
 	// --- Then ---
-	assert.Equal(t, []string{"A=1", "B=2"}, rng.args)
+	assert.Equal(t, args, rng.args)
 }
 
 func Test_WithClock(t *testing.T) {
 	// --- Given ---
 	rng := &Ring{}
 
+	clk := time.Now
+
 	// --- When ---
-	WithClock(time.Now)(rng)
+	WithClock(clk)(rng)
 
 	// --- Then ---
-	assert.Same(t, time.Now, rng.clock)
+	assert.Same(t, clk, rng.clock)
 }
 
 func Test_WithMeta(t *testing.T) {
 	// --- Given ---
 	rng := &Ring{}
 
+	meta := map[string]any{"A": 1, "B": 2}
+
 	// --- When ---
-	WithMeta(map[string]any{"A": 1, "B": 2})(rng)
+	WithMeta(meta)(rng)
 
 	// --- Then ---
-	assert.Equal(t, map[string]any{"A": 1, "B": 2}, rng.meta)
+	assert.Equal(t, meta, rng.meta)
 }
 
 func Test_WithFS(t *testing.T) {
@@ -139,8 +149,10 @@ func Test_New(t *testing.T) {
 		// --- Given ---
 		env := []string{"A=1", "B=2"}
 
+		opt := WithEnv(env)
+
 		// --- When ---
-		have := New(WithEnv(env))
+		have := New(opt)
 
 		// --- Then ---
 		assert.Equal(t, map[string]string{"A": "1", "B": "2"}, have.env)
@@ -231,8 +243,12 @@ func Test_Ring_MetaSet(t *testing.T) {
 		// --- Given ---
 		rng := New()
 
+		key := "A"
+
+		val := 1
+
 		// --- When ---
-		rng.MetaSet("A", 1)
+		rng.MetaSet(key, val)
 
 		// --- Then ---
 		assert.Equal(t, map[string]any{"A": 1}, rng.meta)
@@ -242,8 +258,12 @@ func Test_Ring_MetaSet(t *testing.T) {
 		// --- Given ---
 		rng := New(WithMeta(map[string]any{"A": 1}))
 
+		key := "A"
+
+		val := 2
+
 		// --- When ---
-		rng.MetaSet("A", 2)
+		rng.MetaSet(key, val)
 
 		// --- Then ---
 		assert.Equal(t, map[string]any{"A": 2}, rng.meta)
@@ -270,8 +290,10 @@ func Test_Ring_MetaGet(t *testing.T) {
 		// --- Given ---
 		rng := &Ring{meta: map[string]any{"A": 1}}
 
+		key := "A"
+
 		// --- When ---
-		have := rng.MetaGet("A")
+		have := rng.MetaGet(key)
 
 		// --- Then ---
 		assert.Equal(t, 1, have)
@@ -281,8 +303,10 @@ func Test_Ring_MetaGet(t *testing.T) {
 		// --- Given ---
 		rng := &Ring{meta: map[string]any{}}
 
+		key := "B"
+
 		// --- When ---
-		have := rng.MetaGet("B")
+		have := rng.MetaGet(key)
 
 		// --- Then ---
 		assert.Nil(t, have)
@@ -294,8 +318,10 @@ func Test_Ring_MetaLookup(t *testing.T) {
 		// --- Given ---
 		rng := &Ring{meta: map[string]any{"A": 1}}
 
+		key := "A"
+
 		// --- When ---
-		have, ok := rng.MetaLookup("A")
+		have, ok := rng.MetaLookup(key)
 
 		// --- Then ---
 		assert.Equal(t, 1, have)
@@ -306,8 +332,10 @@ func Test_Ring_MetaLookup(t *testing.T) {
 		// --- Given ---
 		rng := &Ring{meta: map[string]any{}}
 
+		key := "B"
+
 		// --- When ---
-		have, ok := rng.MetaLookup("B")
+		have, ok := rng.MetaLookup(key)
 
 		// --- Then ---
 		assert.Nil(t, have)
@@ -320,8 +348,10 @@ func Test_Ring_MetaDelete(t *testing.T) {
 		// --- Given ---
 		rng := New(WithMeta(map[string]any{"A": 1, "B": 2}))
 
+		key := "A"
+
 		// --- When ---
-		rng.MetaDelete("A")
+		rng.MetaDelete(key)
 
 		// --- Then ---
 		assert.Equal(t, map[string]any{"B": 2}, rng.meta)
@@ -331,8 +361,10 @@ func Test_Ring_MetaDelete(t *testing.T) {
 		// --- Given ---
 		rng := New(WithMeta(map[string]any{"A": 1}))
 
+		key := "B"
+
 		// --- When ---
-		rng.MetaDelete("B")
+		rng.MetaDelete(key)
 
 		// --- Then ---
 		assert.Equal(t, map[string]any{"A": 1}, rng.meta)
