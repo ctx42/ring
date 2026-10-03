@@ -47,13 +47,13 @@ func (ios *IO) Stdout() io.Writer { return ios.stdout }
 
 func (ios *IO) Stderr() io.Writer { return ios.stderr }
 
-// SetStdin sets the standard input stream.
+// SetStdin stores sin, including a nil reader, as the standard input.
 func (ios *IO) SetStdin(sin io.Reader) { ios.stdin = sin }
 
-// SetStdout sets the standard output stream.
+// SetStdout stores sout, including a nil writer, as the standard output.
 func (ios *IO) SetStdout(sout io.Writer) { ios.stdout = sout }
 
-// SetStderr sets the standard error stream.
+// SetStderr stores eout, including a nil writer, as the standard error.
 func (ios *IO) SetStderr(eout io.Writer) { ios.stderr = eout }
 
 // IOClone creates a copy of the current [IO] instance with identical streams.
