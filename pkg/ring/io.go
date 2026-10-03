@@ -24,7 +24,7 @@ type IO struct {
 	stderr io.Writer // Program standard error.
 }
 
-// NewIO returns a new instance of the IO struct with [os.Stdin], [os.Stdout],
+// NewIO returns a new instance of [IO] with [os.Stdin], [os.Stdout],
 // and [os.Stderr] as default values for the stdin, stdout, and stderr fields
 // respectively.
 func NewIO() *IO {
