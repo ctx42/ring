@@ -20,11 +20,11 @@ import (
 
 // Tester represents a CLI test helper.
 type Tester struct {
-	rng  *ring.Ring    // The test ring.
-	sin  *bytes.Buffer // Buffer representing standard input.
-	sout *iokit.Buffer // Buffer to collect stdout writes.
-	eout *iokit.Buffer // Buffer to collect stderr writes.
-	t    tester.T      // The test manager.
+	rng  *ring.Ring    // This is the test ring.
+	sin  *bytes.Buffer // This buffer is standard input.
+	sout *iokit.Buffer // This buffer collects standard output.
+	eout *iokit.Buffer // This buffer collects standard error.
+	t    tester.T      // This runs the test.
 }
 
 // New returns a new [Tester] with the given options. The stored [ring.Ring]
