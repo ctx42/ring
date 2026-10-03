@@ -478,6 +478,17 @@ func Test_EnvOrOs(t *testing.T) {
 		assert.Same(t, env, have)
 	})
 
+	t.Run("return empty", func(t *testing.T) {
+		// --- Given ---
+		env := []string{}
+
+		// --- When ---
+		have := EnvOrOs(env)
+
+		// --- Then ---
+		assert.Same(t, env, have)
+	})
+
 	t.Run("return os", func(t *testing.T) {
 		// --- Given ---
 		var env []string
