@@ -173,7 +173,8 @@ func (rng *Ring) SetArgs(args []string) *Ring {
 	return rng
 }
 
-// Name returns the program name.
+// Name returns the name configured with [WithName]. [New] uses [os.Args]
+// index 0 when no name was configured and the argument list is non-empty.
 func (rng *Ring) Name() string { return rng.name }
 
 // MetaSet sets the metadata value for the given key. If the key already exists,
