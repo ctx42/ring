@@ -79,6 +79,10 @@ var _ Environ = Ring{}  // Compile time check.
 
 // Ring represents a program execution context, encapsulating standard I/O
 // streams, environment variables, arguments, a clock, and metadata.
+//
+// Do not use the zero value. Its promoted environment and stream methods
+// panic, and [Ring.Clock] is nil. Build rings with [New]. [Ring.Clone] of a
+// zero ring keeps the nil environment and the nil streams.
 type Ring struct {
 	*hidEnv                // Program environment.
 	*hidIO                 // Standard I/O streams.
