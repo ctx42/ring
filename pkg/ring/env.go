@@ -35,7 +35,8 @@ type Environ interface {
 	EnvAll() []string
 }
 
-var _ Environ = &Env{} // Compile time check.
+// Env implements Environ.
+var _ Environ = &Env{}
 
 // Env implements [Environ], storing environment variables.
 type Env struct{ env map[string]string }
