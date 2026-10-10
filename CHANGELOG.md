@@ -1,3 +1,6 @@
+## v0.8.1 (Sat, 10 Oct 2026 19:22:34 UTC)
+- build(deps): update testing to v0.57.0 and testkit to v0.16.2.
+
 ## v0.8.0 (Sat, 03 Oct 2026 12:40:09 UTC)
 - chore: update `github.com/ctx42/testing` to v0.56.0 and `github.com/ctx42/testkit` to v0.15.0.
 - fix(ringtest): keep filesystem on Tester.Ring.
