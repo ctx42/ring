@@ -480,7 +480,7 @@ func Test_EnvOrOs(t *testing.T) {
 
 	t.Run("return empty", func(t *testing.T) {
 		// --- Given ---
-		env := []string{}
+		env := make([]string, 0, 1)
 
 		// --- When ---
 		have := EnvOrOs(env)
